@@ -41,19 +41,36 @@ class EmailVerificationView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Enter Email or Phone',
+                        'Enter Email Address',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: blue,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'We\'ll send a verification code to your email',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 24),
                       TextField(
                         controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
-                          labelText: 'Email or Phone',
+                          labelText: 'Email Address',
+                          hintText: 'Enter your email address',
                           prefixIcon: const Icon(Icons.alternate_email, color: green),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: green, width: 2),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -70,17 +87,30 @@ class EmailVerificationView extends StatelessWidget {
                                   ),
                                 ),
                                 onPressed: () async {
-                                   Get.toNamed(AppRoutes.codeVerification);
-                                  // controller.isLoading.value = true;
-                                  // final valid = await controller.validateEmailOrPhone(emailController.text);
-                                  // controller.isLoading.value = false;
-                                  // if (valid) {
-                                  //   controller.emailOrPhone.value = emailController.text;
-                                  //   await controller.sendVerificationCode(emailController.text);
-                                  //   Get.toNamed(AppRoutes.codeVerification);
-                                  // } else {
-                                  //   Get.snackbar('Error', 'Invalid email or phone', backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                  // }
+                                  if (emailController.text.trim().isEmpty) {
+                                    Get.snackbar(
+                                      'Error', 
+                                      'Please enter an email address', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                    return;
+                                  }
+                                  
+                                  final success = await controller.sendVerificationCode(emailController.text.trim());
+                                  if (success) {
+                                    controller.emailOrPhone.value = emailController.text.trim();
+                                    Get.toNamed(AppRoutes.codeVerification);
+                                  } else {
+                                    Get.snackbar(
+                                      'Error', 
+                                      controller.errorMessage.value.isNotEmpty 
+                                        ? controller.errorMessage.value 
+                                        : 'Failed to send verification code', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                  }
                                 },
                                 child: const Text('Send Code'),
                               ),

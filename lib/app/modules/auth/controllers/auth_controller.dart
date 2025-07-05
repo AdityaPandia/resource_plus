@@ -51,14 +51,71 @@ class AuthController extends GetxController {
     return value.contains('@') || value.length == 10;
   }
 
-  Future<bool> sendVerificationCode(String value) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return true;
+  // API: Check Email
+  Future<bool> sendVerificationCode(String email) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+    try {
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/CheckEmail',
+        queryParameters: {
+          'instanceName': instanceName.value,
+          'usrEmail': email,
+          'Lang': 1,
+        },
+        options: Options(responseType: ResponseType.json),
+      );
+      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+        final data = response.data[0];
+        final isValid = data['IsValid'].toString().toLowerCase() == 'true';
+        if (isValid) {
+          isLoading.value = false;
+          return true;
+        } else {
+          errorMessage.value = data['RsltMessage'] ?? 'Invalid email address';
+        }
+      } else {
+        errorMessage.value = 'Unexpected response from server.';
+      }
+    } catch (e) {
+      errorMessage.value = 'Network error. Please try again.';
+    }
+    isLoading.value = false;
+    return false;
   }
 
-  Future<bool> validateVerificationCode(String code) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return code == '123456';
+  // API: Verify OTP
+  Future<bool> validateVerificationCode(String otp) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+    try {
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/VerifyOtp',
+        queryParameters: {
+          'instanceName': instanceName.value,
+          'usrEmail': emailOrPhone.value,
+          'loginOTP': otp,
+          'Lang': 1,
+        },
+        options: Options(responseType: ResponseType.json),
+      );
+      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+        final data = response.data[0];
+        final isValid = data['IsValid'].toString().toLowerCase() == 'true';
+        if (isValid) {
+          isLoading.value = false;
+          return true;
+        } else {
+          errorMessage.value = data['RsltMessage'] ?? 'Invalid OTP';
+        }
+      } else {
+        errorMessage.value = 'Unexpected response from server.';
+      }
+    } catch (e) {
+      errorMessage.value = 'Network error. Please try again.';
+    }
+    isLoading.value = false;
+    return false;
   }
 
   Future<bool> validatePassword(String password) async {
