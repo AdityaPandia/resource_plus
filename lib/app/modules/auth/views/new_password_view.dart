@@ -6,6 +6,11 @@ import '../../../routes/app_routes.dart';
 class NewPasswordView extends StatelessWidget {
   const NewPasswordView({super.key});
 
+  bool _isValidPassword(String password) {
+    // Password must be at least 6 characters long
+    return password.length >= 6;
+  }
+
   @override
   Widget build(BuildContext context) {
     final AuthController controller = Get.find();
@@ -56,6 +61,7 @@ class NewPasswordView extends StatelessWidget {
                         decoration: InputDecoration(
                           labelText: 'New Password',
                           prefixIcon: const Icon(Icons.lock, color: green),
+                          helperText: 'Password must be at least 6 characters long',
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -82,20 +88,67 @@ class NewPasswordView extends StatelessWidget {
                                   ),
                                 ),
                                 onPressed: () async {
-                                   Get.toNamed(AppRoutes.biometricLink);
-                                  // if (newPasswordController.text != confirmPasswordController.text) {
-                                  //   Get.snackbar('Error', 'Passwords do not match', backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                  //   return;
-                                  // }
-                                  // controller.isLoading.value = true;
-                                  // final valid = await controller.changePassword(newPasswordController.text);
-                                  // controller.isLoading.value = false;
-                                  // if (valid) {
-                                  //   controller.newPassword.value = newPasswordController.text;
-                                  //   Get.toNamed(AppRoutes.biometricLink);
-                                  // } else {
-                                  //   Get.snackbar('Error', 'Password does not meet requirements', backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                  // }
+                                  // Validate input fields
+                                  if (newPasswordController.text.isEmpty) {
+                                    Get.snackbar(
+                                      'Error', 
+                                      'Please enter a new password', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                    return;
+                                  }
+
+                                  if (confirmPasswordController.text.isEmpty) {
+                                    Get.snackbar(
+                                      'Error', 
+                                      'Please confirm your password', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                    return;
+                                  }
+
+                                  if (newPasswordController.text != confirmPasswordController.text) {
+                                    Get.snackbar(
+                                      'Error', 
+                                      'Passwords do not match', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                    return;
+                                  }
+
+                                  if (!_isValidPassword(newPasswordController.text)) {
+                                    Get.snackbar(
+                                      'Error', 
+                                      'Password must be at least 6 characters long', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                    return;
+                                  }
+
+                                  // Call the API
+                                  final result = await controller.changeUserPassword(newPasswordController.text);
+                                  
+                                  if (result['success']) {
+                                    controller.newPassword.value = newPasswordController.text;
+                                    Get.snackbar(
+                                      'Success', 
+                                      result['message'] ?? 'Password changed successfully', 
+                                      backgroundColor: Colors.green, 
+                                      colorText: Colors.white
+                                    );
+                                    Get.toNamed(AppRoutes.biometricLink);
+                                  } else {
+                                    Get.snackbar(
+                                      'Error', 
+                                      result['message'] ?? 'Password change failed', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                  }
                                 },
                                 child: const Text('Set Password'),
                               ),

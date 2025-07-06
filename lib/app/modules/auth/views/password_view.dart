@@ -71,16 +71,35 @@ class PasswordView extends StatelessWidget {
                                   ),
                                 ),
                                 onPressed: () async {
-                                   Get.toNamed(AppRoutes.newPassword);
-                                  // controller.isLoading.value = true;
-                                  // final valid = await controller.validatePassword(passwordController.text);
-                                  // controller.isLoading.value = false;
-                                  // if (valid) {
-                                  //   controller.password.value = passwordController.text;
-                                  //   Get.toNamed(AppRoutes.newPassword);
-                                  // } else {
-                                  //   Get.snackbar('Error', 'Invalid password', backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                  // }
+                                  if (passwordController.text.isEmpty) {
+                                    Get.snackbar(
+                                      'Error', 
+                                      'Please enter your password', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                    return;
+                                  }
+                                  
+                                  final result = await controller.validateUserLogin(passwordController.text);
+                                  
+                                  if (result['success']) {
+                                    controller.password.value = passwordController.text;
+                                    
+                                    // Check if password reset is needed
+                                    if (result['isNeedToResetPwd']) {
+                                      Get.toNamed(AppRoutes.newPassword);
+                                    } else {
+                                      Get.toNamed(AppRoutes.biometricLink);
+                                    }
+                                  } else {
+                                    Get.snackbar(
+                                      'Error', 
+                                      result['message'] ?? 'Invalid password', 
+                                      backgroundColor: Colors.redAccent, 
+                                      colorText: Colors.white
+                                    );
+                                  }
                                 },
                                 child: const Text('Continue'),
                               ),
