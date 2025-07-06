@@ -44,6 +44,29 @@ class HomeController extends GetxController {
   // Attendance Static Contents
   final RxMap<String, String> attendanceStaticContents = <String, String>{}.obs;
   
+  // Profile data
+  final RxBool isProfileLoading = false.obs;
+  final RxBool hasProfileError = false.obs;
+  final RxString profileErrorMessage = ''.obs;
+  
+  // Contact Information
+  final RxString profileEmpNumber = ''.obs;
+  final RxString profileEmployeeName = ''.obs;
+  final RxString profileEmpEmail = ''.obs;
+  final RxString profileEmpMobile = ''.obs;
+  
+  // Work Information
+  final RxList workInformation = <Map<String, dynamic>>[].obs;
+  
+  // Skills
+  final RxList skills = <Map<String, dynamic>>[].obs;
+  
+  // Certifications
+  final RxList certifications = <Map<String, dynamic>>[].obs;
+  
+  // Profile Static Contents
+  final RxMap<String, String> profileStaticContents = <String, String>{}.obs;
+  
   @override
   void onInit() {
     super.onInit();
@@ -55,6 +78,10 @@ class HomeController extends GetxController {
     // Fetch attendance data when attendance tab is selected
     if (index == 1) {
       fetchAttendanceData();
+    }
+    // Fetch profile data when profile tab is selected
+    if (index == 2) {
+      fetchProfileData();
     }
   }
   
@@ -303,5 +330,139 @@ class HomeController extends GetxController {
   
   void refreshAttendanceData() {
     fetchAttendanceData();
+  }
+  
+  Future<void> fetchProfileData() async {
+    try {
+      isProfileLoading.value = true;
+      hasProfileError.value = false;
+      profileErrorMessage.value = '';
+      
+      String instanceName = await GetStorage().read('instanceName');
+      String userEmail = await GetStorage().read('email');
+      const int lang = 1;
+      
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/GetProfileData',
+        queryParameters: {
+          'instanceName': instanceName,
+          'Usremail': userEmail,
+          'Lang': lang,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print('Profile API Response: $data');
+        
+        // Parse Contact Information
+        if (data['Contact information'] != null) {
+          try {
+            final contactInfo = data['Contact information'] as Map<String, dynamic>;
+            profileEmpNumber.value = contactInfo['Emp_Number']?.toString() ?? '';
+            profileEmployeeName.value = contactInfo['EmployeeName']?.toString() ?? '';
+            profileEmpEmail.value = contactInfo['Emp_Email']?.toString() ?? '';
+            profileEmpMobile.value = contactInfo['Emp_Mobile']?.toString() ?? '';
+          } catch (e) {
+            print('Error parsing contact information: $e');
+            profileEmpNumber.value = '';
+            profileEmployeeName.value = '';
+            profileEmpEmail.value = '';
+            profileEmpMobile.value = '';
+          }
+        }
+        
+        // Parse Work Information
+        if (data['Work Information'] != null) {
+          try {
+            final workList = data['Work Information'] as List;
+            final parsedWork = <Map<String, dynamic>>[];
+            
+            for (final item in workList) {
+              if (item is Map<String, dynamic>) {
+                parsedWork.add(item);
+              }
+            }
+            
+            workInformation.value = parsedWork;
+          } catch (e) {
+            print('Error parsing work information: $e');
+            workInformation.value = [];
+          }
+        }
+        
+        // Parse Skills
+        if (data['Skills'] != null) {
+          try {
+            final skillsList = data['Skills'] as List;
+            final parsedSkills = <Map<String, dynamic>>[];
+            
+            for (final item in skillsList) {
+              if (item is Map<String, dynamic>) {
+                parsedSkills.add(item);
+              }
+            }
+            
+            skills.value = parsedSkills;
+          } catch (e) {
+            print('Error parsing skills: $e');
+            skills.value = [];
+          }
+        }
+        
+        // Parse Certifications
+        if (data['Certifications'] != null) {
+          try {
+            final certList = data['Certifications'] as List;
+            final parsedCerts = <Map<String, dynamic>>[];
+            
+            for (final item in certList) {
+              if (item is Map<String, dynamic>) {
+                parsedCerts.add(item);
+              }
+            }
+            
+            certifications.value = parsedCerts;
+          } catch (e) {
+            print('Error parsing certifications: $e');
+            certifications.value = [];
+          }
+        }
+        
+        // Parse Profile Static Contents
+        if (data['StaticContents'] != null) {
+          try {
+            final contents = data['StaticContents'] as List;
+            final tempContents = <String, String>{};
+            
+            for (final content in contents) {
+              if (content is Map<String, dynamic>) {
+                final contentType = content['ContentType']?.toString();
+                final contentText = content['ContentText']?.toString() ?? '';
+                
+                if (contentType != null) {
+                  tempContents[contentType] = contentText;
+                }
+              }
+            }
+            
+            profileStaticContents.value = tempContents;
+          } catch (e) {
+            print('Error parsing profile static contents: $e');
+            profileStaticContents.value = {};
+          }
+        }
+      }
+    } catch (e) {
+      hasProfileError.value = true;
+      profileErrorMessage.value = 'Failed to load profile data: ${e.toString()}';
+      print('Error fetching profile data: $e');
+    } finally {
+      isProfileLoading.value = false;
+    }
+  }
+  
+  void refreshProfileData() {
+    fetchProfileData();
   }
 } 
