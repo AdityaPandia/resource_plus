@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import 'package:get_storage/get_storage.dart';
 
 class AuthController extends GetxController {
   // State variables
@@ -18,6 +19,7 @@ class AuthController extends GetxController {
   Future<bool> validateInstance(String instance) async {
     isLoading.value = true;
     errorMessage.value = '';
+    await GetStorage().write('instanceName', instance);
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Master/checkInstance',
@@ -53,6 +55,7 @@ class AuthController extends GetxController {
 
   // API: Check Email
   Future<bool> sendVerificationCode(String email) async {
+    await GetStorage().write('email', email);
     isLoading.value = true;
     errorMessage.value = '';
     try {
@@ -137,6 +140,7 @@ class AuthController extends GetxController {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
         if (isValid) {
+          await GetStorage().write('webLink', data['ClientUrl'] ?? '');
           isLoading.value = false;
           return {
             'success': true,

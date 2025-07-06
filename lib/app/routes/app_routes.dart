@@ -8,4 +8,5 @@ abstract class AppRoutes {
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
   static const dynamicUrl = '/dynamic-url';
+  static const home = '/home';
 } 

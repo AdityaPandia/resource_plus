@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -90,7 +91,8 @@ class PasswordView extends StatelessWidget {
                                     if (result['isNeedToResetPwd']) {
                                       Get.toNamed(AppRoutes.newPassword);
                                     } else {
-                                      Get.toNamed(AppRoutes.biometricLink);
+                                      await GetStorage().write('isLoggedIn', true);
+                                      Get.offAllNamed(AppRoutes.home);
                                     }
                                   } else {
                                     Get.snackbar(
