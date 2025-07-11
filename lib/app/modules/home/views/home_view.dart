@@ -33,9 +33,11 @@ class HomeView extends GetView<HomeController> {
         type: BottomNavigationBarType.fixed,
         currentIndex: controller.currentIndex.value,
         onTap: controller.changeTab,
-        selectedItemColor: const Color(0xFF2196F3), // Blue
-        unselectedItemColor: Colors.grey[600],
-        backgroundColor: Colors.white,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).brightness == Brightness.light 
+            ? Colors.grey[600] 
+            : Colors.grey[400],
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 8,
         items: const [
           BottomNavigationBarItem(

@@ -10,12 +10,12 @@ class NotificationTab extends StatelessWidget {
     final controller = Get.find<HomeController>();
     
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: Obx(() {
         if (controller.isNotificationLoading.value) {
-          return const Center(
+          return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
             ),
           );
         }
@@ -77,10 +77,12 @@ class NotificationTab extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Theme.of(context).brightness == Brightness.light 
+                        ? Colors.grey.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.3),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 1),
@@ -91,18 +93,18 @@ class NotificationTab extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.notifications,
-                    color: const Color(0xFF2196F3),
+                    color: Theme.of(context).colorScheme.primary,
                     size: 28,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       controller.notificationStaticContents['HeaderText'] ?? 'Notifications',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333),
-                      ),
+                                          style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     ),
                   ),
                   if (controller.notifications.isNotEmpty)
@@ -111,9 +113,9 @@ class NotificationTab extends StatelessWidget {
                       icon: const Icon(Icons.done_all, size: 18),
                       label: Text(
                         controller.notificationStaticContents['MarkAllText'] ?? 'Mark all as read',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF2196F3),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ),
@@ -139,7 +141,9 @@ class NotificationTab extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).brightness == Brightness.light 
+                                  ? Colors.grey[600] 
+                                  : Colors.grey[400],
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -147,7 +151,9 @@ class NotificationTab extends StatelessWidget {
                             'You\'re all caught up!',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[500],
+                              color: Theme.of(context).brightness == Brightness.light 
+                                  ? Colors.grey[500] 
+                                  : Colors.grey[500],
                             ),
                           ),
                         ],
@@ -155,7 +161,7 @@ class NotificationTab extends StatelessWidget {
                     )
                   : RefreshIndicator(
                       onRefresh: controller.fetchNotificationData,
-                      color: const Color(0xFF2196F3),
+                      color: Theme.of(context).colorScheme.primary,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: controller.notifications.length,
@@ -166,11 +172,13 @@ class NotificationTab extends StatelessWidget {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
+                                  color: Theme.of(context).brightness == Brightness.light 
+                                      ? Colors.grey.withOpacity(0.1)
+                                      : Colors.black.withOpacity(0.3),
                                   spreadRadius: 1,
                                   blurRadius: 3,
                                   offset: const Offset(0, 1),
@@ -201,15 +209,19 @@ class NotificationTab extends StatelessWidget {
                                         height: 48,
                                         decoration: BoxDecoration(
                                           color: isRead 
-                                              ? Colors.grey[200] 
-                                              : const Color(0xFF2196F3).withOpacity(0.1),
+                                              ? (Theme.of(context).brightness == Brightness.light 
+                                                  ? Colors.grey[200] 
+                                                  : Colors.grey[800])
+                                              : Theme.of(context).colorScheme.primary.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Icon(
                                           Icons.notifications,
                                           color: isRead 
-                                              ? Colors.grey[600] 
-                                              : const Color(0xFF2196F3),
+                                              ? (Theme.of(context).brightness == Brightness.light 
+                                                  ? Colors.grey[600] 
+                                                  : Colors.grey[400])
+                                              : Theme.of(context).colorScheme.primary,
                                           size: 24,
                                         ),
                                       ),
@@ -232,8 +244,10 @@ class NotificationTab extends StatelessWidget {
                                                           ? FontWeight.normal 
                                                           : FontWeight.bold,
                                                       color: isRead 
-                                                          ? Colors.grey[700] 
-                                                          : const Color(0xFF333333),
+                                                          ? (Theme.of(context).brightness == Brightness.light 
+                                                              ? Colors.grey[700] 
+                                                              : Colors.grey[300])
+                                                          : Theme.of(context).colorScheme.onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -241,10 +255,10 @@ class NotificationTab extends StatelessWidget {
                                                   Container(
                                                     width: 8,
                                                     height: 8,
-                                                    decoration: const BoxDecoration(
-                                                      color: Color(0xFF2196F3),
-                                                      shape: BoxShape.circle,
-                                                    ),
+                                                                                                      decoration: BoxDecoration(
+                                                    color: Theme.of(context).colorScheme.primary,
+                                                    shape: BoxShape.circle,
+                                                  ),
                                                   ),
                                               ],
                                             ),
@@ -253,7 +267,9 @@ class NotificationTab extends StatelessWidget {
                                               notification['NotifcnBody'] ?? '',
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Colors.grey[600],
+                                                color: Theme.of(context).brightness == Brightness.light 
+                                                    ? Colors.grey[600] 
+                                                    : Colors.grey[400],
                                                 height: 1.4,
                                               ),
                                             ),
@@ -262,7 +278,9 @@ class NotificationTab extends StatelessWidget {
                                               notification['NotifcnDate'] ?? '',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.grey[500],
+                                                color: Theme.of(context).brightness == Brightness.light 
+                                                    ? Colors.grey[500] 
+                                                    : Colors.grey[500],
                                               ),
                                             ),
                                           ],
@@ -278,9 +296,9 @@ class NotificationTab extends StatelessWidget {
                                               1,
                                             );
                                           },
-                                          icon: const Icon(
+                                          icon: Icon(
                                             Icons.check_circle_outline,
-                                            color: Color(0xFF2196F3),
+                                            color: Theme.of(context).colorScheme.primary,
                                             size: 20,
                                           ),
                                           tooltip: 'Mark as read',

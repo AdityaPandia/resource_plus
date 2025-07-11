@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 import '../../controllers/home_controller.dart';
 
 class HomeTab extends GetView<HomeController> {
@@ -8,12 +11,14 @@ class HomeTab extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
+          return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
             ),
           );
         }
@@ -23,11 +28,7 @@ class HomeTab extends GetView<HomeController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[300],
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
                   'Error Loading Data',
@@ -41,15 +42,22 @@ class HomeTab extends GetView<HomeController> {
                 Text(
                   controller.errorMessage.value,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[600]
+                        : Colors.grey[400],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: controller.refreshData,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2196F3),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
                   child: const Text('Retry'),
                 ),
@@ -67,23 +75,23 @@ class HomeTab extends GetView<HomeController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 50,),
+                  SizedBox(height: 50),
                   // Header with employee info
                   _buildHeader(),
                   const SizedBox(height: 24),
-                  
+
                   // Welcome section
-                  _buildWelcomeSection(),
+                  _buildWelcomeSection(context),
                   const SizedBox(height: 24),
-                  
+
                   // Dashboard cards
-                  _buildDashboardSection(),
+                  _buildDashboardSection(context),
                   const SizedBox(height: 24),
-                  
+
                   // HR Portal section
                   _buildHrPortalSection(),
                   const SizedBox(height: 24),
-                  
+
                   // Today's Schedule section
                   _buildScheduleSection(),
                 ],
@@ -125,11 +133,33 @@ class HomeTab extends GetView<HomeController> {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 30,
-                ),
+                child: controller.profilePictureUrl.value.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: Image.network(
+                          controller.profilePictureUrl.value,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 30,
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : const Icon(Icons.person, color: Colors.white, size: 30),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -137,8 +167,8 @@ class HomeTab extends GetView<HomeController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      controller.employeeName.value.isNotEmpty 
-                          ? controller.employeeName.value 
+                      controller.employeeName.value.isNotEmpty
+                          ? controller.employeeName.value
                           : 'Employee Name',
                       style: const TextStyle(
                         color: Colors.white,
@@ -148,8 +178,8 @@ class HomeTab extends GetView<HomeController> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      controller.positionName.value.isNotEmpty 
-                          ? controller.positionName.value 
+                      controller.positionName.value.isNotEmpty
+                          ? controller.positionName.value
                           : 'Position',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
@@ -174,29 +204,30 @@ class HomeTab extends GetView<HomeController> {
     );
   }
 
-  Widget _buildWelcomeSection() {
-    final welcomeText = controller.staticContents['WelcomeText'] ?? 'Welcome Back';
-    
+  Widget _buildWelcomeSection(BuildContext context) {
+    final welcomeText =
+        controller.staticContents['WelcomeText'] ?? 'Welcome Back';
+
     return Text(
       welcomeText,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF2C3E50),
+        color: Theme.of(context).colorScheme.onBackground,
       ),
     );
   }
 
-  Widget _buildDashboardSection() {
+  Widget _buildDashboardSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Dashboard',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2C3E50),
+            color: Theme.of(context).colorScheme.onBackground,
           ),
         ),
         const SizedBox(height: 16),
@@ -212,14 +243,14 @@ class HomeTab extends GetView<HomeController> {
           itemCount: controller.dashboardData.length,
           itemBuilder: (context, index) {
             final item = controller.dashboardData[index];
-            return _buildDashboardCard(item);
+            return _buildDashboardCard(context, item);
           },
         ),
       ],
     );
   }
 
-  Widget _buildDashboardCard(Map<String, dynamic> item) {
+  Widget _buildDashboardCard(BuildContext context, Map<String, dynamic> item) {
     final icon = item['QInfoIcon'] ?? 'fa fa-info';
     final title = item['QInfoTitle'] ?? '';
     final count = item['QInfoCount'] ?? 0;
@@ -228,11 +259,13 @@ class HomeTab extends GetView<HomeController> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.grey.withOpacity(0.1)
+                : Colors.black.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -253,17 +286,17 @@ class HomeTab extends GetView<HomeController> {
                   ),
                   child: Icon(
                     _getIconFromFontAwesome(icon),
-                    color: const Color(0xFF2196F3),
+                    color: Theme.of(context).colorScheme.primary,
                     size: 20,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   count.toString(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2196F3),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],
@@ -271,10 +304,10 @@ class HomeTab extends GetView<HomeController> {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -284,7 +317,9 @@ class HomeTab extends GetView<HomeController> {
               subTitle,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey[600]
+                    : Colors.grey[400],
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -293,7 +328,9 @@ class HomeTab extends GetView<HomeController> {
               description,
               style: TextStyle(
                 fontSize: 10,
-                color: Colors.grey[500],
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.grey[500]
+                    : Colors.grey[500],
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -306,77 +343,159 @@ class HomeTab extends GetView<HomeController> {
 
   Widget _buildHrPortalSection() {
     final headText = controller.staticContents['HrLinkHeadText'] ?? 'HR Portal';
-    final subheadText = controller.staticContents['HrLinkSubheadText'] ?? 'Access HR Services and information';
-    
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.orange[400]!, Colors.orange[600]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    final subheadText =
+        controller.staticContents['HrLinkSubheadText'] ??
+        'Access HR Services and information';
+
+    return GestureDetector(
+      onTap: () async {
+        try {
+          final webLink = GetStorage().read('webLink');
+          print('webLink: $webLink');
+
+          if (webLink == null || webLink.toString().isEmpty) {
+            Get.snackbar(
+              'Error',
+              'HR Portal link not available',
+              backgroundColor: Colors.redAccent,
+              colorText: Colors.white,
+            );
+            return;
+          }
+
+          final String urlString = webLink.toString();
+          print('URL String: $urlString');
+
+          // Ensure the URL has a proper scheme
+          String finalUrl = urlString;
+          if (!urlString.startsWith('http://') &&
+              !urlString.startsWith('https://')) {
+            finalUrl = 'https://$urlString';
+          }
+
+          print('Final URL: $finalUrl');
+
+          // Try multiple launch modes
+          bool launched = false;
+
+          // Try external application first
+          try {
+            final Uri url = Uri.parse(finalUrl);
+            print('Attempting to launch with external application mode...');
+            launched = await launchUrl(
+              url,
+              mode: LaunchMode.externalApplication,
+            );
+            print('External application result: $launched');
+          } catch (e) {
+            print('External application failed: $e');
+          }
+
+          // If external failed, try platform default
+          if (!launched) {
+            try {
+              final Uri url = Uri.parse(finalUrl);
+              print('Attempting to launch with platform default mode...');
+              launched = await launchUrl(url, mode: LaunchMode.platformDefault);
+              print('Platform default result: $launched');
+            } catch (e) {
+              print('Platform default failed: $e');
+            }
+          }
+
+          // If still failed, try in-app browser
+          if (!launched) {
+            try {
+              final Uri url = Uri.parse(finalUrl);
+              print('Attempting to launch with in-app browser mode...');
+              launched = await launchUrl(url, mode: LaunchMode.inAppWebView);
+              print('In-app browser result: $launched');
+            } catch (e) {
+              print('In-app browser failed: $e');
+            }
+          }
+
+          if (!launched) {
+            Get.snackbar(
+              'Error',
+              'Failed to open HR Portal - all launch modes failed',
+              backgroundColor: Colors.redAccent,
+              colorText: Colors.white,
+            );
+          }
+        } catch (e) {
+          print('General error: $e');
+          Get.snackbar(
+            'Error',
+            'Error opening HR Portal: ${e.toString()}',
+            backgroundColor: Colors.redAccent,
+            colorText: Colors.white,
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.orange[400]!, Colors.orange[600]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.business, color: Colors.white, size: 24),
             ),
-            child: const Icon(
-              Icons.business,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  headText,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    headText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subheadText,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
+                  const SizedBox(height: 4),
+                  Text(
+                    subheadText,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios,
-            color: Colors.white,
-            size: 16,
-          ),
-        ],
+            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildScheduleSection() {
-    final scheduleText = controller.staticContents['ScheduleheadText'] ?? "Today's Schedule";
+    final scheduleText =
+        controller.staticContents['ScheduleheadText'] ?? "Today's Schedule";
     final seeAllText = controller.staticContents['SeeAllText'] ?? 'See All';
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -439,10 +558,7 @@ class HomeTab extends GetView<HomeController> {
                   const Expanded(
                     child: Text(
                       'No scheduled activities for today',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF2C3E50),
-                      ),
+                      style: TextStyle(fontSize: 16, color: Color(0xFF2C3E50)),
                     ),
                   ),
                 ],
@@ -472,4 +588,4 @@ class HomeTab extends GetView<HomeController> {
         return Icons.info;
     }
   }
-} 
+}

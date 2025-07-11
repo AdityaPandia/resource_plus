@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -73,21 +74,26 @@ class LoginView extends StatelessWidget {
                         children: [
                           TextButton(
                             onPressed: () {
-                              Get.toNamed(AppRoutes.forgotPassword);
+                              // Get.toNamed(AppRoutes.forgotPassword);
+                              Get.toNamed(AppRoutes.newPassword);
                             },
                             child: const Text('Forgot Password?'),
                           ),
                           IconButton(
                             icon: const Icon(Icons.fingerprint, size: 32, color: green),
                             onPressed: () async {
-                              controller.isLoading.value = true;
-                              final linked = await controller.linkBiometric();
-                              controller.isLoading.value = false;
-                              if (linked) {
-                                final url = await controller.getDynamicUrl();
-                                Get.toNamed(AppRoutes.dynamicUrl, arguments: url);
+                              final result = await controller.biometricLogin();
+                              
+                              if (result['success']) {
+                                if (result['isNeedToResetPwd']) {
+                                  // Route to new password screen
+                                  Get.offAllNamed(AppRoutes.newPassword);
+                                } else {
+                                  // Route to home screen
+                                  Get.offAllNamed(AppRoutes.home);
+                                }
                               } else {
-                                Get.snackbar('Error', 'Biometric login failed', backgroundColor: Colors.redAccent, colorText: Colors.white);
+                                Get.snackbar('Error', result['message'], backgroundColor: Colors.redAccent, colorText: Colors.white);
                               }
                             },
                           ),
@@ -107,14 +113,24 @@ class LoginView extends StatelessWidget {
                                   ),
                                 ),
                                 onPressed: () async {
-                                  controller.isLoading.value = true;
-                                  final valid = await controller.validatePassword(passwordController.text);
-                                  controller.isLoading.value = false;
-                                  if (valid) {
-                                    final url = await controller.getDynamicUrl();
-                                    Get.toNamed(AppRoutes.dynamicUrl, arguments: url);
+                                  if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
+                                    Get.snackbar('Error', 'Please enter both username/email and password', backgroundColor: Colors.redAccent, colorText: Colors.white);
+                                    return;
+                                  }
+                                  
+                                  final result = await controller.loginWithStoredInstance(usernameController.text, passwordController.text);
+                                  
+                                  if (result['success']) {
+                                    if (result['isNeedToResetPwd']) {
+                                      // Route to new password screen
+                                      Get.offAllNamed(AppRoutes.newPassword);
+                                    } else {
+                                      // Route to home screen
+                                      await GetStorage().write('isLoggedIn', true);
+                                      Get.offAllNamed(AppRoutes.home);
+                                    }
                                   } else {
-                                    Get.snackbar('Error', 'Invalid credentials', backgroundColor: Colors.redAccent, colorText: Colors.white);
+                                    Get.snackbar('Error', result['message'], backgroundColor: Colors.redAccent, colorText: Colors.white);
                                   }
                                 },
                                 child: const Text('Login'),

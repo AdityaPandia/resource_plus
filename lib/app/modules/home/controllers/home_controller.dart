@@ -89,10 +89,14 @@ class HomeController extends GetxController {
   // Settings Static Contents
   final RxMap<String, String> settingsStaticContents = <String, String>{}.obs;
   
+  // Profile Picture
+  final RxString profilePictureUrl = ''.obs;
+  
   @override
   void onInit() {
     super.onInit();
     fetchHomeData();
+    initializeProfilePicture();
   }
   
   void changeTab(int index) {
@@ -684,5 +688,21 @@ class HomeController extends GetxController {
   
   void refreshSettingsData() {
     fetchSettingsData();
+  }
+  
+  // Get Profile Picture URL
+  String getProfilePictureUrl() {
+    final instanceName = GetStorage().read('instanceName') ?? '';
+    final userEmail = GetStorage().read('email') ?? '';
+    
+    if (instanceName.isNotEmpty && userEmail.isNotEmpty) {
+      return 'https://auto.resourceplus.app/Mobile/api/Client/GetProfPicture?instanceName=$instanceName&usrEmail=$userEmail&lang=1';
+    }
+    return '';
+  }
+  
+  // Initialize profile picture URL
+  void initializeProfilePicture() {
+    profilePictureUrl.value = getProfilePictureUrl();
   }
 } 

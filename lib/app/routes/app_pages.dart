@@ -17,6 +17,7 @@ class AppPages {
   
   static const initialLogin = AppRoutes.instanceScan;
   static const initialHome = AppRoutes.home;
+  static const emailPassLogin = AppRoutes.login;
 
   
   static final routes = [
