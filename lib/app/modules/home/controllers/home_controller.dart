@@ -67,6 +67,28 @@ class HomeController extends GetxController {
   // Profile Static Contents
   final RxMap<String, String> profileStaticContents = <String, String>{}.obs;
   
+  // Notification data
+  final RxBool isNotificationLoading = false.obs;
+  final RxBool hasNotificationError = false.obs;
+  final RxString notificationErrorMessage = ''.obs;
+  
+  // Notifications list
+  final RxList notifications = <Map<String, dynamic>>[].obs;
+  
+  // Notification Static Contents
+  final RxMap<String, String> notificationStaticContents = <String, String>{}.obs;
+  
+  // Common Contents (for base URL)
+  final RxMap<String, String> commonContents = <String, String>{}.obs;
+  
+  // Settings data
+  final RxBool isSettingsLoading = false.obs;
+  final RxBool hasSettingsError = false.obs;
+  final RxString settingsErrorMessage = ''.obs;
+  
+  // Settings Static Contents
+  final RxMap<String, String> settingsStaticContents = <String, String>{}.obs;
+  
   @override
   void onInit() {
     super.onInit();
@@ -82,6 +104,14 @@ class HomeController extends GetxController {
     // Fetch profile data when profile tab is selected
     if (index == 2) {
       fetchProfileData();
+    }
+    // Fetch notification data when notification tab is selected
+    if (index == 3) {
+      fetchNotificationData();
+    }
+    // Fetch settings data when settings tab is selected
+    if (index == 4) {
+      fetchSettingsData();
     }
   }
   
@@ -464,5 +494,195 @@ class HomeController extends GetxController {
   
   void refreshProfileData() {
     fetchProfileData();
+  }
+  
+  Future<void> fetchNotificationData() async {
+    try {
+      isNotificationLoading.value = true;
+      hasNotificationError.value = false;
+      notificationErrorMessage.value = '';
+      
+      String instanceName = await GetStorage().read('instanceName');
+      String userEmail = await GetStorage().read('email');
+      const int lang = 1;
+      
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/GetNotifcnData',
+        queryParameters: {
+          'instanceName': instanceName,
+          'usrEmail': userEmail,
+          'lang': lang,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print('Notification API Response: $data');
+        
+        // Parse Notifications
+        if (data['Notifications'] != null) {
+          try {
+            final notificationsList = data['Notifications'] as List;
+            final parsedNotifications = <Map<String, dynamic>>[];
+            
+            for (final item in notificationsList) {
+              if (item is Map<String, dynamic>) {
+                parsedNotifications.add(item);
+              }
+            }
+            
+            notifications.value = parsedNotifications;
+          } catch (e) {
+            print('Error parsing notifications: $e');
+            notifications.value = [];
+          }
+        }
+        
+        // Parse Static Contents
+        if (data['StaticContents'] != null) {
+          try {
+            final contents = data['StaticContents'] as List;
+            final tempContents = <String, String>{};
+            
+            for (final content in contents) {
+              if (content is Map<String, dynamic>) {
+                final contentType = content['ContentType']?.toString();
+                final contentText = content['ContentText']?.toString() ?? '';
+                
+                if (contentType != null) {
+                  tempContents[contentType] = contentText;
+                }
+              }
+            }
+            
+            notificationStaticContents.value = tempContents;
+          } catch (e) {
+            print('Error parsing notification static contents: $e');
+            notificationStaticContents.value = {};
+          }
+        }
+        
+        // Parse Common Contents
+        if (data['CommonContents'] != null) {
+          try {
+            final commonList = data['CommonContents'] as List;
+            final tempCommon = <String, String>{};
+            
+            for (final content in commonList) {
+              if (content is Map<String, dynamic>) {
+                final baseUrl = content['BaseUrl']?.toString() ?? '';
+                tempCommon['BaseUrl'] = baseUrl;
+              }
+            }
+            
+            commonContents.value = tempCommon;
+          } catch (e) {
+            print('Error parsing common contents: $e');
+            commonContents.value = {};
+          }
+        }
+      }
+    } catch (e) {
+      hasNotificationError.value = true;
+      notificationErrorMessage.value = 'Failed to load notification data: ${e.toString()}';
+      print('Error fetching notification data: $e');
+    } finally {
+      isNotificationLoading.value = false;
+    }
+  }
+  
+  Future<void> updateNotificationReadStatus(int notificationId, int readStatus) async {
+    try {
+      String instanceName = await GetStorage().read('instanceName');
+      String userEmail = await GetStorage().read('email');
+      const int lang = 1;
+      
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/UpdateReadStatus',
+        queryParameters: {
+          'instanceName': instanceName,
+          'Usremail': userEmail,
+          'Lang': lang,
+          'notifcnID': notificationId,
+          'readStatus': readStatus,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print('Update Read Status Response: $data');
+        
+        // Refresh notification data after update
+        await fetchNotificationData();
+        
+        return;
+      }
+    } catch (e) {
+      print('Error updating notification read status: $e');
+    }
+  }
+  
+  void refreshNotificationData() {
+    fetchNotificationData();
+  }
+  
+  Future<void> fetchSettingsData() async {
+    try {
+      isSettingsLoading.value = true;
+      hasSettingsError.value = false;
+      settingsErrorMessage.value = '';
+      
+      String instanceName = await GetStorage().read('instanceName');
+      String userEmail = await GetStorage().read('email');
+      const int lang = 1;
+      
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/GetSettingsData',
+        queryParameters: {
+          'instanceName': instanceName,
+          'usrEmail': userEmail,
+          'lang': lang,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        print('Settings API Response: $data');
+        
+        // Parse Settings Static Contents
+        if (data['StaticContents'] != null) {
+          try {
+            final contents = data['StaticContents'] as List;
+            final tempContents = <String, String>{};
+            
+            for (final content in contents) {
+              if (content is Map<String, dynamic>) {
+                final contentType = content['ContentType']?.toString();
+                final contentText = content['ContentText']?.toString() ?? '';
+                
+                if (contentType != null) {
+                  tempContents[contentType] = contentText;
+                }
+              }
+            }
+            
+            settingsStaticContents.value = tempContents;
+          } catch (e) {
+            print('Error parsing settings static contents: $e');
+            settingsStaticContents.value = {};
+          }
+        }
+      }
+    } catch (e) {
+      hasSettingsError.value = true;
+      settingsErrorMessage.value = 'Failed to load settings data: ${e.toString()}';
+      print('Error fetching settings data: $e');
+    } finally {
+      isSettingsLoading.value = false;
+    }
+  }
+  
+  void refreshSettingsData() {
+    fetchSettingsData();
   }
 } 
