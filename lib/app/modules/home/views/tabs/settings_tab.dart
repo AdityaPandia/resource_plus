@@ -5,6 +5,7 @@ import 'package:resource_plus/app/routes/app_pages.dart';
 import 'package:resource_plus/app/routes/app_routes.dart';
 import '../../controllers/home_controller.dart';
 import '../../../../controllers/theme_controller.dart';
+import '../../../../controllers/language_controller.dart';
 
 class SettingsTab extends StatelessWidget {
   const SettingsTab({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class SettingsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<HomeController>();
     final themeController = Get.find<ThemeController>();
+    final languageController = Get.find<LanguageController>();
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -130,38 +132,41 @@ class SettingsTab extends StatelessWidget {
                                 .settingsStaticContents['PreferencesText'] ??
                             'Preferences',
                         items: [
-                          _buildSettingsItem(
-                            context: context,
-                            icon: Icons.language,
-                            title:
-                                controller
-                                    .settingsStaticContents['LanguageText'] ??
-                                'Language',
-                            subtitle: 'Choose your preferred language',
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
+                          Obx(
+                            () => _buildSettingsItem(
+                              context: context,
+                              icon: Icons.language,
+                              title:
                                   controller
-                                          .settingsStaticContents['EnglishText'] ??
-                                      'English',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
+                                      .settingsStaticContents['LanguageText'] ??
+                                  'language'.tr,
+                              subtitle: 'choose_language'.tr,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    languageController
+                                        .currentLanguageDisplayName,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                  color: Colors.grey[400],
-                                ),
-                              ],
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 16,
+                                    color: Colors.grey[400],
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                _showLanguageDialog(
+                                  context,
+                                  languageController,
+                                );
+                              },
                             ),
-                            onTap: () {
-                              // TODO: Implement language selection
-                              print('Language settings tapped');
-                            },
                           ),
                           _buildSettingsItem(
                             context: context,
@@ -455,6 +460,57 @@ class SettingsTab extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showLanguageDialog(
+    BuildContext context,
+    LanguageController languageController,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('language'.tr),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('English'),
+                leading: Radio<String>(
+                  value: LanguageController.english,
+                  groupValue: languageController.currentLanguage.value,
+                  onChanged: (value) {
+                    if (value != null) {
+                      languageController.changeLanguage(value);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
+              ListTile(
+                title: const Text('العربية'),
+                leading: Radio<String>(
+                  value: LanguageController.arabic,
+                  groupValue: languageController.currentLanguage.value,
+                  onChanged: (value) {
+                    if (value != null) {
+                      languageController.changeLanguage(value);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('cancel'.tr),
+            ),
+          ],
+        );
+      },
     );
   }
 }

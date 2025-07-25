@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'app/routes/app_pages.dart';
 import 'app/controllers/theme_controller.dart';
+import 'app/controllers/language_controller.dart';
+import 'app/translations/app_translations.dart';
 
-void main()async {
+void main() async {
   await GetStorage.init();
   runApp(const MyApp());
 }
@@ -14,15 +16,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize theme controller
+    // Initialize controllers
     final themeController = Get.put(ThemeController());
-    
+    final languageController = Get.put(LanguageController());
+
     // Logo theme colors for auth screens
     const blue = Color(0xFF3B6EA5);
     const green = Color(0xFF6BC04B);
     const orange = Color(0xFFF7941D);
 
     return GetMaterialApp(
+      translations: AppTranslations(),
+      locale: languageController.currentLanguage.value == 'en'
+          ? const Locale('en', 'US')
+          : const Locale('ar', 'SA'),
+      fallbackLocale: const Locale('en', 'US'),
+      textDirection: languageController.isRTL.value
+          ? TextDirection.rtl
+          : TextDirection.ltr,
       title: 'Resource Plus',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -48,8 +59,13 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: orange,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
             elevation: 4,
           ),
         ),
@@ -90,8 +106,13 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: orange,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
             elevation: 4,
           ),
         ),
@@ -109,8 +130,14 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      themeMode: themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
-      initialRoute: GetStorage().read('isLoggedIn') == true ? AppPages.initialHome :GetStorage().read('instanceName') == null  ? AppPages.initialLogin : AppPages.emailPassLogin,
+      themeMode: themeController.isDarkMode.value
+          ? ThemeMode.dark
+          : ThemeMode.light,
+      initialRoute: GetStorage().read('isLoggedIn') == true
+          ? AppPages.initialHome
+          : GetStorage().read('instanceName') == null
+          ? AppPages.initialLogin
+          : AppPages.emailPassLogin,
       getPages: AppPages.routes,
     );
   }

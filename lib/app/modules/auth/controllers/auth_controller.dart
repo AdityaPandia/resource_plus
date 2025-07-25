@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:local_auth/local_auth.dart';
+import '../../../controllers/language_controller.dart';
 
 class AuthController extends GetxController {
   // State variables
@@ -21,16 +22,21 @@ class AuthController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
     await GetStorage().write('instanceName', instance);
+
+    final languageController = Get.find<LanguageController>();
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Master/checkInstance',
         queryParameters: {
           'instanceName': instance,
-          'Lang': 1,
+          'Lang': languageController.currentLangCode,
         },
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
         if (isValid) {
@@ -59,17 +65,22 @@ class AuthController extends GetxController {
     await GetStorage().write('email', email);
     isLoading.value = true;
     errorMessage.value = '';
+
+    final languageController = Get.find<LanguageController>();
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/CheckEmail',
         queryParameters: {
           'instanceName': instanceName.value,
           'usrEmail': email,
-          'Lang': 1,
+          'Lang': languageController.currentLangCode,
         },
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
         if (isValid) {
@@ -92,6 +103,9 @@ class AuthController extends GetxController {
   Future<bool> validateVerificationCode(String otp) async {
     isLoading.value = true;
     errorMessage.value = '';
+
+    final languageController = Get.find<LanguageController>();
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/VerifyOtp',
@@ -99,11 +113,13 @@ class AuthController extends GetxController {
           'instanceName': instanceName.value,
           'usrEmail': emailOrPhone.value,
           'loginOTP': otp,
-          'Lang': 1,
+          'Lang': languageController.currentLangCode,
         },
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
         if (isValid) {
@@ -126,6 +142,9 @@ class AuthController extends GetxController {
   Future<Map<String, dynamic>> validateUserLogin(String password) async {
     isLoading.value = true;
     errorMessage.value = '';
+
+    final languageController = Get.find<LanguageController>();
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/ValidateUser',
@@ -133,11 +152,13 @@ class AuthController extends GetxController {
           'instanceName': instanceName.value,
           'usrEmail': emailOrPhone.value,
           'UsrPassword': password,
-          'Lang': 1,
+          'Lang': languageController.currentLangCode,
         },
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
         if (isValid) {
@@ -171,10 +192,7 @@ class AuthController extends GetxController {
     } catch (e) {
       errorMessage.value = 'Network error. Please try again.';
       isLoading.value = false;
-      return {
-        'success': false,
-        'message': 'Network error. Please try again.',
-      };
+      return {'success': false, 'message': 'Network error. Please try again.'};
     }
   }
 
@@ -182,6 +200,9 @@ class AuthController extends GetxController {
   Future<Map<String, dynamic>> changeUserPassword(String newPassword) async {
     isLoading.value = true;
     errorMessage.value = '';
+
+    final languageController = Get.find<LanguageController>();
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/ChangePwd',
@@ -189,11 +210,13 @@ class AuthController extends GetxController {
           'instanceName': instanceName.value,
           'usrEmail': emailOrPhone.value,
           'UsrPassword': newPassword,
-          'Lang': 1,
+          'Lang': languageController.currentLangCode,
         },
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         final data = response.data[0];
         final isValid = data['IsValid'] == true;
         if (isValid) {
@@ -221,10 +244,7 @@ class AuthController extends GetxController {
     } catch (e) {
       errorMessage.value = 'Network error. Please try again.';
       isLoading.value = false;
-      return {
-        'success': false,
-        'message': 'Network error. Please try again.',
-      };
+      return {'success': false, 'message': 'Network error. Please try again.'};
     }
   }
 
@@ -309,7 +329,8 @@ class AuthController extends GetxController {
         isLoading.value = false;
         return {
           'success': false,
-          'message': 'Biometric authentication is not available on this device.',
+          'message':
+              'Biometric authentication is not available on this device.',
         };
       }
 
@@ -326,18 +347,22 @@ class AuthController extends GetxController {
       // Get stored credentials for biometric login
       final storedEmail = GetStorage().read('email');
       final storedPassword = GetStorage().read('password');
-      
+
       if (storedEmail == null || storedPassword == null) {
         isLoading.value = false;
         return {
           'success': false,
-          'message': 'No stored credentials found. Please login with username and password first.',
+          'message':
+              'No stored credentials found. Please login with username and password first.',
         };
       }
 
       // Perform login with stored credentials
-      final loginResult = await loginWithStoredInstance(storedEmail, storedPassword);
-      
+      final loginResult = await loginWithStoredInstance(
+        storedEmail,
+        storedPassword,
+      );
+
       return loginResult;
     } catch (e) {
       isLoading.value = false;
@@ -354,10 +379,13 @@ class AuthController extends GetxController {
   }
 
   // API: Login with stored instance
-  Future<Map<String, dynamic>> loginWithStoredInstance(String email, String password) async {
+  Future<Map<String, dynamic>> loginWithStoredInstance(
+    String email,
+    String password,
+  ) async {
     isLoading.value = true;
     errorMessage.value = '';
-    
+
     // Get instance name from storage
     final storedInstanceName = GetStorage().read('instanceName');
     if (storedInstanceName == null || storedInstanceName.toString().isEmpty) {
@@ -368,6 +396,8 @@ class AuthController extends GetxController {
       };
     }
 
+    final languageController = Get.find<LanguageController>();
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/ValidateUser',
@@ -375,23 +405,31 @@ class AuthController extends GetxController {
           'instanceName': storedInstanceName,
           'usrEmail': email,
           'UsrPassword': password,
-          'Lang': 1,
+          'Lang': languageController.currentLangCode,
         },
         options: Options(responseType: ResponseType.json),
       );
-      
-      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
-        
+
         if (isValid) {
           // Store user data
           await GetStorage().write('webLink', data['ClientUrl'] ?? '');
-          await GetStorage().write('empDisplayName', data['EmpDisplayName'] ?? '');
+          await GetStorage().write(
+            'empDisplayName',
+            data['EmpDisplayName'] ?? '',
+          );
           await GetStorage().write('username', data['Username'] ?? '');
           await GetStorage().write('email', data['Email'] ?? '');
-          await GetStorage().write('password', password); // Store password for biometric login
-          
+          await GetStorage().write(
+            'password',
+            password,
+          ); // Store password for biometric login
+
           isLoading.value = false;
           return {
             'success': true,
@@ -421,10 +459,7 @@ class AuthController extends GetxController {
     } catch (e) {
       errorMessage.value = 'Network error. Please try again.';
       isLoading.value = false;
-      return {
-        'success': false,
-        'message': 'Network error. Please try again.',
-      };
+      return {'success': false, 'message': 'Network error. Please try again.'};
     }
   }
-} 
+}

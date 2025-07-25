@@ -6,12 +6,17 @@ import 'tabs/attendance_tab.dart';
 import 'tabs/profile_tab.dart';
 import 'tabs/notification_tab.dart';
 import 'tabs/settings_tab.dart';
+import '../../calendar/views/calendar_view.dart';
+import '../../calendar/controllers/calendar_controller.dart';
+import '../../../controllers/language_controller.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final languageController = Get.find<LanguageController>();
+
     return Scaffold(
       body: Obx(() {
         switch (controller.currentIndex.value) {
@@ -24,44 +29,52 @@ class HomeView extends GetView<HomeController> {
           case 3:
             return const NotificationTab();
           case 4:
+            return const CalendarView();
+          case 5:
             return const SettingsTab();
           default:
             return const HomeTab();
         }
       }),
-      bottomNavigationBar: Obx(() => BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: controller.currentIndex.value,
-        onTap: controller.changeTab,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).brightness == Brightness.light 
-            ? Colors.grey[600] 
-            : Colors.grey[400],
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.access_time),
-            label: 'Attendance',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      )),
+      bottomNavigationBar: Obx(
+        () => BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: controller.currentIndex.value,
+          onTap: controller.changeTab,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Theme.of(context).brightness == Brightness.light
+              ? Colors.grey[600]
+              : Colors.grey[400],
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          elevation: 8,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'home'.tr,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.access_time),
+              label: 'attendance'.tr,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person),
+              label: 'profile'.tr,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.notifications),
+              label: 'notifications'.tr,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.calendar_today),
+              label: 'calendar'.tr,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings),
+              label: 'settings'.tr,
+            ),
+          ],
+        ),
+      ),
     );
   }
-} 
+}

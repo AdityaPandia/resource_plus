@@ -48,15 +48,20 @@ class _InstanceScanViewState extends State<InstanceScanView> {
               Card(
                 elevation: 8,
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Scan or Enter Instance',
+                        'instance_scan'.tr,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: blue,
@@ -70,7 +75,7 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                               controller: instanceController,
                               style: const TextStyle(fontSize: 16),
                               decoration: InputDecoration(
-                                labelText: 'Instance Name',
+                                labelText: 'instance_name'.tr,
                                 prefixIcon: Icon(Icons.domain, color: green),
                               ),
                             ),
@@ -88,52 +93,70 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(color: blue, width: 1.5),
                                 ),
-                                child: Icon(Icons.qr_code_scanner, color: blue, size: 32),
+                                child: Icon(
+                                  Icons.qr_code_scanner,
+                                  color: blue,
+                                  size: 32,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Obx(() => controller.errorMessage.value.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Text(
-                                controller.errorMessage.value,
-                                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
-                              ),
-                            )
-                          : const SizedBox.shrink()),
-                      const SizedBox(height: 8),
-                      Obx(() => controller.isLoading.value
-                          ? const CircularProgressIndicator()
-                          : SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: orange,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                      Obx(
+                        () => controller.errorMessage.value.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: Text(
+                                  controller.errorMessage.value,
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                onPressed: () async {
-                                  final instance = instanceController.text.trim();
-                                  if (instance.isEmpty) {
-                                    Get.snackbar('Error', 'Please enter an instance name', backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                    return;
-                                  }
-                                  final valid = await controller.validateInstance(instance);
-                                  if (valid) {
-                                    controller.instanceName.value = instance;
-                                    Get.toNamed(AppRoutes.emailVerification);
-                                  } else {
-                                    // Error message is shown above button
-                                  }
-                                },
-                                child: const Text('Continue'),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 8),
+                      Obx(
+                        () => controller.isLoading.value
+                            ? const CircularProgressIndicator()
+                            : SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: orange,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    final instance = instanceController.text
+                                        .trim();
+                                    if (instance.isEmpty) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Please enter an instance name',
+                                        backgroundColor: Colors.redAccent,
+                                        colorText: Colors.white,
+                                      );
+                                      return;
+                                    }
+                                    final valid = await controller
+                                        .validateInstance(instance);
+                                    if (valid) {
+                                      controller.instanceName.value = instance;
+                                      Get.toNamed(AppRoutes.emailVerification);
+                                    } else {
+                                      // Error message is shown above button
+                                    }
+                                  },
+                                  child: Text('continue'.tr),
+                                ),
                               ),
-                            )),
+                      ),
                     ],
                   ),
                 ),
@@ -173,7 +196,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             controller: MobileScannerController(),
             onDetect: (capture) {
               final List<Barcode> barcodes = capture.barcodes;
-              if (!_scanned && barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+              if (!_scanned &&
+                  barcodes.isNotEmpty &&
+                  barcodes.first.rawValue != null) {
                 setState(() => _scanned = true);
                 Get.back(result: barcodes.first.rawValue);
               }
