@@ -13,7 +13,8 @@ class AttendanceTab extends GetView<HomeController> {
         if (controller.isAttendanceLoading.value) {
           return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary),
             ),
           );
         }
@@ -53,7 +54,8 @@ class AttendanceTab extends GetView<HomeController> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 12),
                   ),
                   child: const Text('Retry'),
                 ),
@@ -96,7 +98,8 @@ class AttendanceTab extends GetView<HomeController> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final attendanceText = controller.attendanceStaticContents['AttendanceText'] ?? 'Attendance';
+    final attendanceText =
+        controller.attendanceStaticContents['AttendanceText'] ?? 'Attendance';
     return Text(
       attendanceText,
       style: TextStyle(
@@ -124,18 +127,15 @@ class AttendanceTab extends GetView<HomeController> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.secondary,
-                ],
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2196F3), Color(0xFF4CAF50)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  color: Colors.blue.withOpacity(0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -144,11 +144,23 @@ class AttendanceTab extends GetView<HomeController> {
             child: Row(
               children: [
                 Expanded(
-                  child: _buildRateCard(context, 'Present', controller.attendanceRate.first['PresentPercentage'] ?? '0.00', '%', Colors.green),
+                  child: _buildRateCard(
+                      context,
+                      'Present',
+                      controller.attendanceRate.first['PresentPercentage'] ??
+                          '0.00',
+                      '%',
+                      Colors.green),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildRateCard(context, 'Absent', controller.attendanceRate.first['AbsentPercentage'] ?? '0.00', '%', Colors.red),
+                  child: _buildRateCard(
+                      context,
+                      'Absent',
+                      controller.attendanceRate.first['AbsentPercentage'] ??
+                          '0.00',
+                      '%',
+                      Colors.red),
                 ),
               ],
             ),
@@ -157,7 +169,8 @@ class AttendanceTab extends GetView<HomeController> {
     );
   }
 
-  Widget _buildRateCard(BuildContext context, String title, String value, String unit, Color color) {
+  Widget _buildRateCard(BuildContext context, String title, String value,
+      String unit, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -302,8 +315,9 @@ class AttendanceTab extends GetView<HomeController> {
   }
 
   Widget _buildRecentActivitiesSection(BuildContext context) {
-    final recentText = controller.attendanceStaticContents['RecentText'] ?? 'Recent Attendance';
-    
+    final recentText = controller.attendanceStaticContents['RecentText'] ??
+        'Recent Attendance';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -330,13 +344,14 @@ class AttendanceTab extends GetView<HomeController> {
     );
   }
 
-  Widget _buildActivityCard(BuildContext context, Map<String, dynamic> activity) {
+  Widget _buildActivityCard(
+      BuildContext context, Map<String, dynamic> activity) {
     final attDate = activity['AttDate'] ?? '';
     final dayType = activity['DayType'] ?? '';
     final checkIn = activity['CheckIN'] ?? '';
     final checkOut = activity['CheckOut'] ?? '';
     final dayTypeColor = activity['DayTypeColor'] ?? '#000000';
-    
+
     Color color;
     try {
       color = Color(int.parse(dayTypeColor.replaceAll('#', '0xFF')));
@@ -387,7 +402,8 @@ class AttendanceTab extends GetView<HomeController> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
@@ -414,9 +430,10 @@ class AttendanceTab extends GetView<HomeController> {
                           'Check-in: $checkIn',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? Colors.grey[600]
-                                : Colors.grey[400],
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
                           ),
                         ),
                       ],
@@ -431,9 +448,10 @@ class AttendanceTab extends GetView<HomeController> {
                           'Check-out: $checkOut',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? Colors.grey[600]
-                                : Colors.grey[400],
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
                           ),
                         ),
                       ],
@@ -502,7 +520,7 @@ class AttendanceTab extends GetView<HomeController> {
     final dayType = legend['DayType'] ?? '';
     final count = legend['Count'] ?? 0;
     final dayTypeColor = legend['DayTypeColor'] ?? '#000000';
-    
+
     Color color;
     try {
       color = Color(int.parse(dayTypeColor.replaceAll('#', '0xFF')));
@@ -553,4 +571,4 @@ class AttendanceTab extends GetView<HomeController> {
     }
     return Color(int.parse(hex, radix: 16));
   }
-} 
+}

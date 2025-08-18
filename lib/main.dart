@@ -5,9 +5,15 @@ import 'app/routes/app_pages.dart';
 import 'app/controllers/theme_controller.dart';
 import 'app/controllers/language_controller.dart';
 import 'app/translations/app_translations.dart';
+import 'app/services/notification_service.dart';
 
 void main() async {
   await GetStorage.init();
+
+  // Initialize notification service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
   runApp(const MyApp());
 }
 
@@ -134,10 +140,12 @@ class MyApp extends StatelessWidget {
           ? ThemeMode.dark
           : ThemeMode.light,
       initialRoute: GetStorage().read('isLoggedIn') == true
-          ? AppPages.initialHome
-          : GetStorage().read('instanceName') == null
-          ? AppPages.initialLogin
-          : AppPages.emailPassLogin,
+          ? AppPages.bioCheck //need to change to
+          : AppPages.initialLogin,
+      // : GetStorage().read('instanceName') == null ||
+      //       GetStorage().read('instanceName').toString().isEmpty
+      // ? AppPages.initialLogin
+      // : AppPages.emailPassLogin,
       getPages: AppPages.routes,
     );
   }

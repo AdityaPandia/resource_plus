@@ -50,27 +50,27 @@ class HomeView extends GetView<HomeController> {
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.home),
-              label: 'home'.tr,
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.access_time),
-              label: 'attendance'.tr,
+              label: 'Attendance',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.person),
-              label: 'profile'.tr,
+              label: 'Profile',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.notifications),
-              label: 'notifications'.tr,
+              label: 'Notifications',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.calendar_today),
-              label: 'calendar'.tr,
+              label: 'Calendar',
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.settings),
-              label: 'settings'.tr,
+              label: 'Settings',
             ),
           ],
         ),

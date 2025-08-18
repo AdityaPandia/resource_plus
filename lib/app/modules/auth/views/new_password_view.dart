@@ -141,8 +141,10 @@ class NewPasswordView extends StatelessWidget {
                                       backgroundColor: Colors.green, 
                                       colorText: Colors.white
                                     );
-                                    await GetStorage().write('isLoggedIn', true);
-                                    Get.offAllNamed(AppRoutes.home);
+                                    // await GetStorage().write('isLoggedIn', true);
+                                    //TODO ADD BIO
+                                    Get.toNamed(AppRoutes.biometricLink);
+                                    // Get.offAllNamed(AppRoutes.home);
                                   } else {
                                     Get.snackbar(
                                       'Error', 

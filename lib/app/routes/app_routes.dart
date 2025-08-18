@@ -5,8 +5,10 @@ abstract class AppRoutes {
   static const password = '/password';
   static const newPassword = '/new-password';
   static const biometricLink = '/biometric-link';
+  static const biometricCheck = '/biometric-check';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
   static const dynamicUrl = '/dynamic-url';
+  static const webview = '/webview';
   static const home = '/home';
-} 
+}

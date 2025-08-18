@@ -3,9 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../calendar/controllers/calendar_controller.dart';
 import '../../../controllers/language_controller.dart';
+import '../../../services/notification_service.dart';
 
 class HomeController extends GetxController {
   final Dio _dio = Dio();
+  final NotificationService _notificationService = NotificationService();
 
   // Bottom navigation index
   final RxInt currentIndex = 0.obs;
@@ -115,6 +117,8 @@ class HomeController extends GetxController {
     // Fetch notification data when notification tab is selected
     if (index == 3) {
       fetchNotificationData();
+      // Reset notification count when user visits notification tab
+      _notificationService.resetNotificationCount(notifications.length);
     }
     // Initialize calendar when calendar tab is selected
     if (index == 4) {
@@ -320,6 +324,15 @@ class HomeController extends GetxController {
                 parsedActivities.add(item);
               }
             }
+
+            // Sort activities by date using AttDate field
+            parsedActivities.sort((a, b) {
+              final dateA = a['AttDate'] ?? '';
+              final dateB = b['AttDate'] ?? '';
+              return dateB.compareTo(
+                dateA,
+              ); // Sort in descending order (newest first)
+            });
 
             recentActivities.value = parsedActivities;
           } catch (e) {
@@ -562,6 +575,11 @@ class HomeController extends GetxController {
             }
 
             notifications.value = parsedNotifications;
+
+            // Check for new notifications and show local push notification
+            await _notificationService.checkForNewNotifications(
+              parsedNotifications.length,
+            );
           } catch (e) {
             print('Error parsing notifications: $e');
             notifications.value = [];
@@ -659,6 +677,34 @@ class HomeController extends GetxController {
 
   void refreshNotificationData() {
     fetchNotificationData();
+  }
+
+  // Method to show individual notification for specific events
+  Future<void> showIndividualNotification(String title, String body) async {
+    await _notificationService.showCustomNotification(
+      title: title,
+      body: body,
+      payload: 'custom_notification',
+    );
+  }
+
+  // Fetch support URL from API
+  Future<String?> getSupportURL() async {
+    try {
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/mobile/api/Master/GetSupportURL',
+      );
+
+      if (response.statusCode == 200 &&
+          response.data is List &&
+          response.data.isNotEmpty) {
+        final data = response.data[0];
+        return data['SupportURL'] as String?;
+      }
+    } catch (e) {
+      print('Error fetching support URL: $e');
+    }
+    return null;
   }
 
   Future<void> fetchSettingsData() async {

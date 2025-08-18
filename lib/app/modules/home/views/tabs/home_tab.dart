@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:io';
 import '../../controllers/home_controller.dart';
+import '../../../../routes/app_routes.dart';
 
 class HomeTab extends GetView<HomeController> {
   const HomeTab({Key? key}) : super(key: key);
@@ -93,7 +92,7 @@ class HomeTab extends GetView<HomeController> {
                   const SizedBox(height: 24),
 
                   // Today's Schedule section
-                  _buildScheduleSection(),
+                  // _buildScheduleSection(),
                 ],
               ),
             ),
@@ -366,65 +365,13 @@ class HomeTab extends GetView<HomeController> {
           final String urlString = webLink.toString();
           print('URL String: $urlString');
 
-          // Ensure the URL has a proper scheme
-          String finalUrl = urlString;
-          if (!urlString.startsWith('http://') &&
-              !urlString.startsWith('https://')) {
-            finalUrl = 'https://$urlString';
-          }
-
-          print('Final URL: $finalUrl');
-
-          // Try multiple launch modes
-          bool launched = false;
-
-          // Try external application first
-          try {
-            final Uri url = Uri.parse(finalUrl);
-            print('Attempting to launch with external application mode...');
-            launched = await launchUrl(
-              url,
-              mode: LaunchMode.externalApplication,
-            );
-            print('External application result: $launched');
-          } catch (e) {
-            print('External application failed: $e');
-          }
-
-          // If external failed, try platform default
-          if (!launched) {
-            try {
-              final Uri url = Uri.parse(finalUrl);
-              print('Attempting to launch with platform default mode...');
-              launched = await launchUrl(url, mode: LaunchMode.platformDefault);
-              print('Platform default result: $launched');
-            } catch (e) {
-              print('Platform default failed: $e');
-            }
-          }
-
-          // If still failed, try in-app browser
-          if (!launched) {
-            try {
-              final Uri url = Uri.parse(finalUrl);
-              print('Attempting to launch with in-app browser mode...');
-              launched = await launchUrl(url, mode: LaunchMode.inAppWebView);
-              print('In-app browser result: $launched');
-            } catch (e) {
-              print('In-app browser failed: $e');
-            }
-          }
-
-          if (!launched) {
-            Get.snackbar(
-              'Error',
-              'Failed to open HR Portal - all launch modes failed',
-              backgroundColor: Colors.redAccent,
-              colorText: Colors.white,
-            );
-          }
+          // Navigate to in-app WebView instead of external browser
+          Get.toNamed(
+            AppRoutes.webview,
+            parameters: {'url': urlString, 'title': 'HR Portal'},
+          );
         } catch (e) {
-          print('General error: $e');
+          print('Error opening HR Portal: $e');
           Get.snackbar(
             'Error',
             'Error opening HR Portal: ${e.toString()}',

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/home_controller.dart';
+import '../../../../services/notification_service.dart';
 
 class NotificationTab extends StatelessWidget {
   const NotificationTab({Key? key}) : super(key: key);
@@ -8,28 +10,34 @@ class NotificationTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HomeController>();
-    
+    final notificationService = NotificationService();
+
+    // Reset notification count when user visits notification tab
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notificationService.resetNotificationCount(
+        controller.notifications.length,
+      );
+    });
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Obx(() {
         if (controller.isNotificationLoading.value) {
           return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
             ),
           );
         }
-        
+
         if (controller.hasNotificationError.value) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 80,
-                  color: Colors.red[300],
-                ),
+                Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
                   'Error Loading Notifications',
@@ -45,10 +53,7 @@ class NotificationTab extends StatelessWidget {
                   child: Text(
                     controller.notificationErrorMessage.value,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -59,7 +64,10 @@ class NotificationTab extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2196F3),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -69,18 +77,18 @@ class NotificationTab extends StatelessWidget {
             ),
           );
         }
-        
+
         return Column(
           children: [
             // Header
-            SizedBox(height: 30,),
+            SizedBox(height: 30),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).brightness == Brightness.light 
+                    color: Theme.of(context).brightness == Brightness.light
                         ? Colors.grey.withOpacity(0.1)
                         : Colors.black.withOpacity(0.3),
                     spreadRadius: 1,
@@ -99,20 +107,24 @@ class NotificationTab extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      controller.notificationStaticContents['HeaderText'] ?? 'Notifications',
-                                          style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                      controller.notificationStaticContents['HeaderText'] ??
+                          'Notifications',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   if (controller.notifications.isNotEmpty)
                     TextButton.icon(
-                      onPressed: () => controller.updateNotificationReadStatus(0, 1),
+                      onPressed: () {
+                        _markAllAsRead(controller);
+                      },
                       icon: const Icon(Icons.done_all, size: 18),
                       label: Text(
-                        controller.notificationStaticContents['MarkAllText'] ?? 'Mark all as read',
+                        controller.notificationStaticContents['MarkAllText'] ??
+                            'Mark all as read',
                         style: TextStyle(
                           fontSize: 14,
                           color: Theme.of(context).colorScheme.primary,
@@ -122,7 +134,7 @@ class NotificationTab extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Notifications List
             Expanded(
               child: controller.notifications.isEmpty
@@ -141,8 +153,10 @@ class NotificationTab extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).brightness == Brightness.light 
-                                  ? Colors.grey[600] 
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[600]
                                   : Colors.grey[400],
                             ),
                           ),
@@ -151,8 +165,10 @@ class NotificationTab extends StatelessWidget {
                             'You\'re all caught up!',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Theme.of(context).brightness == Brightness.light 
-                                  ? Colors.grey[500] 
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[500]
                                   : Colors.grey[500],
                             ),
                           ),
@@ -168,7 +184,7 @@ class NotificationTab extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final notification = controller.notifications[index];
                           final isRead = notification['ReadStatus'] == 'True';
-                          
+
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
@@ -176,7 +192,9 @@ class NotificationTab extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Theme.of(context).brightness == Brightness.light 
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.light
                                       ? Colors.grey.withOpacity(0.1)
                                       : Colors.black.withOpacity(0.3),
                                   spreadRadius: 1,
@@ -190,64 +208,100 @@ class NotificationTab extends StatelessWidget {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
-                                  // Mark as read when tapped
-                                  if (!isRead) {
-                                    controller.updateNotificationReadStatus(
-                                      int.tryParse(notification['NotifcnID'].toString()) ?? 0,
-                                      1,
+                                  // Handle notification redirection
+                                  final redirectUrl =
+                                      notification['RedirectURL'] ??
+                                      notification['redirectUrl'];
+                                  if (redirectUrl != null &&
+                                      redirectUrl.toString().isNotEmpty) {
+                                    // Open the URL in the app or external browser
+                                    _handleNotificationRedirect(
+                                      redirectUrl.toString(),
                                     );
+                                  } else {
+                                    // Mark as read if no redirect URL
+                                    if (!isRead) {
+                                      controller.updateNotificationReadStatus(
+                                        int.tryParse(
+                                              notification['NotifcnID']
+                                                  .toString(),
+                                            ) ??
+                                            0,
+                                        1,
+                                      );
+                                    }
                                   }
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Notification Icon
                                       Container(
                                         width: 48,
                                         height: 48,
                                         decoration: BoxDecoration(
-                                          color: isRead 
-                                              ? (Theme.of(context).brightness == Brightness.light 
-                                                  ? Colors.grey[200] 
-                                                  : Colors.grey[800])
-                                              : Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: isRead
+                                              ? (Theme.of(context).brightness ==
+                                                        Brightness.light
+                                                    ? Colors.grey[200]
+                                                    : Colors.grey[800])
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: Icon(
                                           Icons.notifications,
-                                          color: isRead 
-                                              ? (Theme.of(context).brightness == Brightness.light 
-                                                  ? Colors.grey[600] 
-                                                  : Colors.grey[400])
-                                              : Theme.of(context).colorScheme.primary,
+                                          color: isRead
+                                              ? (Theme.of(context).brightness ==
+                                                        Brightness.light
+                                                    ? Colors.grey[600]
+                                                    : Colors.grey[400])
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
                                           size: 24,
                                         ),
                                       ),
-                                      
+
                                       const SizedBox(width: 16),
-                                      
+
                                       // Notification Content
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Row(
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    notification['NotifcnTitle'] ?? '',
+                                                    notification['NotifcnTitle'] ??
+                                                        '',
                                                     style: TextStyle(
                                                       fontSize: 16,
-                                                      fontWeight: isRead 
-                                                          ? FontWeight.normal 
+                                                      fontWeight: isRead
+                                                          ? FontWeight.normal
                                                           : FontWeight.bold,
-                                                      color: isRead 
-                                                          ? (Theme.of(context).brightness == Brightness.light 
-                                                              ? Colors.grey[700] 
-                                                              : Colors.grey[300])
-                                                          : Theme.of(context).colorScheme.onSurface,
+                                                      color: isRead
+                                                          ? (Theme.of(
+                                                                      context,
+                                                                    ).brightness ==
+                                                                    Brightness
+                                                                        .light
+                                                                ? Colors
+                                                                      .grey[700]
+                                                                : Colors
+                                                                      .grey[300])
+                                                          : Theme.of(context)
+                                                                .colorScheme
+                                                                .onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -255,10 +309,12 @@ class NotificationTab extends StatelessWidget {
                                                   Container(
                                                     width: 8,
                                                     height: 8,
-                                                                                                      decoration: BoxDecoration(
-                                                    color: Theme.of(context).colorScheme.primary,
-                                                    shape: BoxShape.circle,
-                                                  ),
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).colorScheme.primary,
+                                                      shape: BoxShape.circle,
+                                                    ),
                                                   ),
                                               ],
                                             ),
@@ -267,8 +323,12 @@ class NotificationTab extends StatelessWidget {
                                               notification['NotifcnBody'] ?? '',
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: Theme.of(context).brightness == Brightness.light 
-                                                    ? Colors.grey[600] 
+                                                color:
+                                                    Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.light
+                                                    ? Colors.grey[600]
                                                     : Colors.grey[400],
                                                 height: 1.4,
                                               ),
@@ -278,27 +338,38 @@ class NotificationTab extends StatelessWidget {
                                               notification['NotifcnDate'] ?? '',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Theme.of(context).brightness == Brightness.light 
-                                                    ? Colors.grey[500] 
+                                                color:
+                                                    Theme.of(
+                                                          context,
+                                                        ).brightness ==
+                                                        Brightness.light
+                                                    ? Colors.grey[500]
                                                     : Colors.grey[500],
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      
+
                                       // Action Button
                                       if (!isRead)
                                         IconButton(
                                           onPressed: () {
-                                            controller.updateNotificationReadStatus(
-                                              int.tryParse(notification['NotifcnID'].toString()) ?? 0,
-                                              1,
-                                            );
+                                            controller
+                                                .updateNotificationReadStatus(
+                                                  int.tryParse(
+                                                        notification['NotifcnID']
+                                                            .toString(),
+                                                      ) ??
+                                                      0,
+                                                  1,
+                                                );
                                           },
                                           icon: Icon(
                                             Icons.check_circle_outline,
-                                            color: Theme.of(context).colorScheme.primary,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                             size: 20,
                                           ),
                                           tooltip: 'Mark as read',
@@ -318,4 +389,57 @@ class NotificationTab extends StatelessWidget {
       }),
     );
   }
-} 
+
+  void _handleNotificationRedirect(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Get.snackbar(
+          'Error',
+          'Could not open the notification link',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Invalid notification link',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  void _markAllAsRead(HomeController controller) async {
+    try {
+      // Mark all unread notifications as read
+      for (final notification in controller.notifications) {
+        final isRead =
+            notification['IsRead'] == 1 || notification['isRead'] == 1;
+        if (!isRead) {
+          await controller.updateNotificationReadStatus(
+            int.tryParse(notification['NotifcnID'].toString()) ?? 0,
+            1,
+          );
+        }
+      }
+
+      Get.snackbar(
+        'Success',
+        'All notifications marked as read',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to mark notifications as read',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+}

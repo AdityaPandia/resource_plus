@@ -21,6 +21,8 @@ class AuthController extends GetxController {
   Future<bool> validateInstance(String instance) async {
     isLoading.value = true;
     errorMessage.value = '';
+    // Convert to lowercase for case-insensitive handling
+    // final normalizedInstance = instance.toLowerCase().trim();
     await GetStorage().write('instanceName', instance);
 
     final languageController = Get.find<LanguageController>();
@@ -50,6 +52,7 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       errorMessage.value = 'Network error. Please try again.';
+      print(e);
     }
     isLoading.value = false;
     return false;
@@ -67,12 +70,15 @@ class AuthController extends GetxController {
     errorMessage.value = '';
 
     final languageController = Get.find<LanguageController>();
+    // Get the current instance name from storage to ensure it's up to date
+    final currentInstanceName =
+        await GetStorage().read('instanceName') ?? instanceName.value;
 
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/CheckEmail',
         queryParameters: {
-          'instanceName': instanceName.value,
+          'instanceName': currentInstanceName,
           'usrEmail': email,
           'Lang': languageController.currentLangCode,
         },
@@ -162,7 +168,22 @@ class AuthController extends GetxController {
         final data = response.data[0];
         final isValid = data['IsValid'].toString().toLowerCase() == 'true';
         if (isValid) {
+          // Store user data for biometric login
           await GetStorage().write('webLink', data['ClientUrl'] ?? '');
+          await GetStorage().write(
+            'empDisplayName',
+            data['EmpDisplayName'] ?? '',
+          );
+          await GetStorage().write('username', data['Username'] ?? '');
+          await GetStorage().write('email', data['Email'] ?? '');
+          await GetStorage().write(
+            'password',
+            password,
+          ); // Store password for biometric login
+      
+          await GetStorage().write('instanceName', instanceName.value);
+      // Enable biometric login
+
           isLoading.value = false;
           return {
             'success': true,
@@ -271,15 +292,35 @@ class AuthController extends GetxController {
     return true;
   }
 
+  // Check if biometric setup is complete
+  bool isBiometricSetupComplete() {
+    return GetStorage().read('biometricSetupComplete') ?? false;
+  }
+
+  // Check if biometric login is enabled
+  bool isBiometricEnabled() {
+    return GetStorage().read('biometricEnabled') ?? false;
+  }
+
   // Biometric Authentication
   final LocalAuthentication _localAuth = LocalAuthentication();
+
+  // Getter to access LocalAuthentication for debugging
+  LocalAuthentication get localAuth => _localAuth;
 
   Future<bool> isBiometricAvailable() async {
     try {
       final isAvailable = await _localAuth.canCheckBiometrics;
       final isDeviceSupported = await _localAuth.isDeviceSupported();
-      return isAvailable && isDeviceSupported;
+      final availableBiometrics = await _localAuth.getAvailableBiometrics();
+
+      print('Debug: canCheckBiometrics: $isAvailable');
+      print('Debug: isDeviceSupported: $isDeviceSupported');
+      print('Debug: availableBiometrics: $availableBiometrics');
+
+      return isAvailable && isDeviceSupported && availableBiometrics.isNotEmpty;
     } catch (e) {
+      print('Debug: Biometric availability error: $e');
       return false;
     }
   }
@@ -294,26 +335,66 @@ class AuthController extends GetxController {
 
   Future<bool> authenticateWithBiometrics() async {
     try {
+      print('Debug: Starting biometric authentication...');
+
       final isAvailable = await isBiometricAvailable();
+      print('Debug: Biometric available: $isAvailable');
       if (!isAvailable) {
+        print('Debug: Biometric not available, aborting');
         return false;
       }
 
       final availableBiometrics = await getAvailableBiometrics();
+      print('Debug: Available biometrics: $availableBiometrics');
       if (availableBiometrics.isEmpty) {
+        print('Debug: No biometrics enrolled, aborting');
         return false;
       }
 
-      final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Please authenticate to login',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
+      print('Debug: Calling _localAuth.authenticate...');
+
+      // Try different authentication options
+      AuthenticationOptions authOptions;
+      if (availableBiometrics.contains(BiometricType.fingerprint)) {
+        print('Debug: Using fingerprint authentication');
+        authOptions = const AuthenticationOptions(
+          biometricOnly: false,
           stickyAuth: true,
-        ),
+          sensitiveTransaction: false,
+        );
+      } else {
+        print('Debug: Using general biometric authentication');
+        authOptions = const AuthenticationOptions(
+          biometricOnly: false,
+          stickyAuth: true,
+          sensitiveTransaction: false,
+        );
+      }
+
+      final authenticated = await _localAuth.authenticate(
+        localizedReason: 'Please authenticate to set up biometric login',
+        options: authOptions,
       );
 
+      print('Debug: Authentication result: $authenticated');
       return authenticated;
     } catch (e) {
+      print('Debug: Biometric authentication error: $e');
+      print('Debug: Error type: ${e.runtimeType}');
+      print('Debug: Error details: ${e.toString()}');
+
+      // Handle specific platform exceptions
+      if (e.toString().contains('no_fragment_activity')) {
+        print(
+            'Debug: FragmentActivity error - MainActivity needs to extend FlutterFragmentActivity');
+      } else if (e.toString().contains('NotAvailable')) {
+        print('Debug: Biometric hardware not available');
+      } else if (e.toString().contains('NotEnrolled')) {
+        print('Debug: No biometrics enrolled on device');
+      } else if (e.toString().contains('UserCancel')) {
+        print('Debug: User cancelled biometric authentication');
+      }
+
       return false;
     }
   }
@@ -376,6 +457,26 @@ class AuthController extends GetxController {
   Future<String> getDynamicUrl() async {
     await Future.delayed(const Duration(seconds: 1));
     return 'https://example.com';
+  }
+
+  // Logout method
+  Future<void> logout() async {
+    // Clear all stored data except instance name
+    await GetStorage().write('isLoggedIn', false);
+    await GetStorage().write('email', '');
+    await GetStorage().write('password', '');
+    await GetStorage().write('username', '');
+    await GetStorage().write('empDisplayName', '');
+    await GetStorage().write('webLink', '');
+    await GetStorage().write('biometricEnabled', false);
+
+    // Reset controller values
+    emailOrPhone.value = '';
+    password.value = '';
+    newPassword.value = '';
+    confirmPassword.value = '';
+    verificationCode.value = '';
+    errorMessage.value = '';
   }
 
   // API: Login with stored instance

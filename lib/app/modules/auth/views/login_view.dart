@@ -4,8 +4,51 @@ import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  bool _biometricAvailable = false;
+  bool _isCheckingBiometric = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh biometric availability when returning to this screen
+    _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final controller = Get.find<AuthController>();
+    try {
+      final isAvailable = await controller.isBiometricAvailable();
+      final biometricSetup = controller.isBiometricSetupComplete();
+
+      if (mounted) {
+        setState(() {
+          _biometricAvailable = isAvailable && biometricSetup;
+          _isCheckingBiometric = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _biometricAvailable = false;
+          _isCheckingBiometric = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +78,15 @@ class LoginView extends StatelessWidget {
               Card(
                 elevation: 8,
                 color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -79,63 +127,97 @@ class LoginView extends StatelessWidget {
                             },
                             child: const Text('Forgot Password?'),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.fingerprint, size: 32, color: green),
-                            onPressed: () async {
-                              final result = await controller.biometricLogin();
-                              
-                              if (result['success']) {
-                                if (result['isNeedToResetPwd']) {
-                                  // Route to new password screen
-                                  Get.offAllNamed(AppRoutes.newPassword);
+                          // Show biometric button only if available and set up
+                          if (!_isCheckingBiometric && _biometricAvailable)
+                            IconButton(
+                              icon: const Icon(
+                                Icons.fingerprint,
+                                size: 32,
+                                color: green,
+                              ),
+                              onPressed: () async {
+                                final result = await controller
+                                    .biometricLogin();
+
+                                if (result['success']) {
+                                  if (result['isNeedToResetPwd']) {
+                                    // Route to new password screen
+                                    Get.offAllNamed(AppRoutes.newPassword);
+                                  } else {
+                                    // Route to home screen
+                                    Get.offAllNamed(AppRoutes.home);
+                                  }
                                 } else {
-                                  // Route to home screen
-                                  Get.offAllNamed(AppRoutes.home);
+                                  Get.snackbar(
+                                    'Error',
+                                    result['message'],
+                                    backgroundColor: Colors.redAccent,
+                                    colorText: Colors.white,
+                                  );
                                 }
-                              } else {
-                                Get.snackbar('Error', result['message'], backgroundColor: Colors.redAccent, colorText: Colors.white);
-                              }
-                            },
-                          ),
+                              },
+                            )
+                          else
+                            const SizedBox.shrink(),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Obx(() => controller.isLoading.value
-                          ? const CircularProgressIndicator()
-                          : SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: orange,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                      Obx(
+                        () => controller.isLoading.value
+                            ? const CircularProgressIndicator()
+                            : SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: orange,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
                                   ),
-                                ),
-                                onPressed: () async {
-                                  if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
-                                    Get.snackbar('Error', 'Please enter both username/email and password', backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                    return;
-                                  }
-                                  
-                                  final result = await controller.loginWithStoredInstance(usernameController.text, passwordController.text);
-                                  
-                                  if (result['success']) {
-                                    if (result['isNeedToResetPwd']) {
-                                      // Route to new password screen
-                                      Get.offAllNamed(AppRoutes.newPassword);
-                                    } else {
-                                      // Route to home screen
-                                      await GetStorage().write('isLoggedIn', true);
-                                      Get.offAllNamed(AppRoutes.home);
+                                  onPressed: () async {
+                                    if (usernameController.text.isEmpty ||
+                                        passwordController.text.isEmpty) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Please enter both username/email and password',
+                                        backgroundColor: Colors.redAccent,
+                                        colorText: Colors.white,
+                                      );
+                                      return;
                                     }
-                                  } else {
-                                    Get.snackbar('Error', result['message'], backgroundColor: Colors.redAccent, colorText: Colors.white);
-                                  }
-                                },
-                                child: const Text('Login'),
+
+                                    final result = await controller
+                                        .loginWithStoredInstance(
+                                          usernameController.text,
+                                          passwordController.text,
+                                        );
+
+                                    if (result['success']) {
+                                      if (result['isNeedToResetPwd']) {
+                                        // Route to new password screen
+                                        Get.offAllNamed(AppRoutes.newPassword);
+                                      } else {
+                                        // Route to home screen
+                                        await GetStorage().write(
+                                          'isLoggedIn',
+                                          true,
+                                        );
+                                        Get.offAllNamed(AppRoutes.home);
+                                      }
+                                    } else {
+                                      Get.snackbar(
+                                        'Error',
+                                        result['message'],
+                                        backgroundColor: Colors.redAccent,
+                                        colorText: Colors.white,
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Login'),
+                                ),
                               ),
-                            )),
+                      ),
                     ],
                   ),
                 ),
@@ -146,4 +228,4 @@ class LoginView extends StatelessWidget {
       ),
     );
   }
-} 
+}

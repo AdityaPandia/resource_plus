@@ -91,8 +91,10 @@ class PasswordView extends StatelessWidget {
                                     if (result['isNeedToResetPwd']) {
                                       Get.toNamed(AppRoutes.newPassword);
                                     } else {
-                                      await GetStorage().write('isLoggedIn', true);
-                                      Get.offAllNamed(AppRoutes.home);
+                                      // await GetStorage().write('isLoggedIn', true);
+                                      // Get.offAllNamed(AppRoutes.home);
+                                      //TODO ADD BIO
+                                      Get.toNamed(AppRoutes.biometricLink);
                                     }
                                   } else {
                                     Get.snackbar(
