@@ -6,6 +6,7 @@ import '../modules/auth/views/password_view.dart';
 import '../modules/auth/views/new_password_view.dart';
 import '../modules/auth/views/biometric_link_view.dart';
 import '../modules/auth/views/biometric_check_view.dart';
+import '../modules/auth/views/permission_request_view.dart';
 import '../modules/auth/views/login_view.dart';
 import '../modules/auth/views/forgot_password_view.dart';
 import '../modules/auth/views/dynamic_url_view.dart';
@@ -41,13 +42,23 @@ class AppPages {
       name: AppRoutes.biometricCheck,
       page: () => const BiometricCheckView(),
     ),
+    GetPage(
+      name: AppRoutes.permissionRequest,
+      page: () => const PermissionRequestView(),
+    ),
     GetPage(name: AppRoutes.login, page: () => const LoginView()),
     GetPage(
       name: AppRoutes.forgotPassword,
       page: () => const ForgotPasswordView(),
     ),
     GetPage(name: AppRoutes.dynamicUrl, page: () => const DynamicUrlView()),
-    GetPage(name: AppRoutes.webview, page: () => const WebViewPage()),
+    GetPage(
+      name: AppRoutes.webview,
+      page: () => WebViewPage(
+        url: Get.parameters['url'] ?? '',
+        title: Get.parameters['title'] ?? 'Web Page',
+      ),
+    ),
     GetPage(
       name: AppRoutes.home,
       page: () => const HomeView(),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/home_controller.dart';
 import '../../../../services/notification_service.dart';
+import '../../../../routes/app_routes.dart';
 
 class NotificationTab extends StatelessWidget {
   const NotificationTab({Key? key}) : super(key: key);
@@ -110,12 +110,30 @@ class NotificationTab extends StatelessWidget {
                       controller.notificationStaticContents['HeaderText'] ??
                           'Notifications',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
+                  // Force Check Button
+                  IconButton(
+                    onPressed: () {
+                      controller.forceNotificationCheck();
+                      Get.snackbar(
+                        'Checking',
+                        'Checking for new notifications...',
+                        backgroundColor: Colors.blue,
+                        colorText: Colors.white,
+                      );
+                    },
+                    icon: Icon(
+                      Icons.refresh,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    tooltip: 'Check for new notifications',
+                  ),
+
                   if (controller.notifications.isNotEmpty)
                     TextButton.icon(
                       onPressed: () {
@@ -208,18 +226,44 @@ class NotificationTab extends StatelessWidget {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
-                                  // Handle notification redirection
-                                  final redirectUrl =
-                                      notification['RedirectURL'] ??
-                                      notification['redirectUrl'];
-                                  if (redirectUrl != null &&
-                                      redirectUrl.toString().isNotEmpty) {
-                                    // Open the URL in the app or external browser
-                                    _handleNotificationRedirect(
-                                      redirectUrl.toString(),
+                                  // Handle notification redirection using BaseUrl + QueryString
+                                  final baseUrl =
+                                      controller.commonContents['BaseUrl'];
+                                  final queryString =
+                                      notification['QueryString'];
+
+                                  if (baseUrl != null &&
+                                      baseUrl.isNotEmpty &&
+                                      queryString != null &&
+                                      queryString.toString().isNotEmpty) {
+                                    // Combine BaseUrl with QueryString
+                                    final fullUrl =
+                                        baseUrl + queryString.toString();
+
+                                    // Open in in-app WebView
+                                    Get.toNamed(
+                                      AppRoutes.webview,
+                                      parameters: {
+                                        'url': fullUrl,
+                                        'title':
+                                            notification['NotifcnTitle'] ??
+                                            'Notification',
+                                      },
                                     );
+
+                                    // Mark as read if not already read
+                                    if (!isRead) {
+                                      controller.updateNotificationReadStatus(
+                                        int.tryParse(
+                                              notification['NotifcnID']
+                                                  .toString(),
+                                            ) ??
+                                            0,
+                                        1,
+                                      );
+                                    }
                                   } else {
-                                    // Mark as read if no redirect URL
+                                    // Fallback: just mark as read if no URL available
                                     if (!isRead) {
                                       controller.updateNotificationReadStatus(
                                         int.tryParse(
@@ -388,29 +432,6 @@ class NotificationTab extends StatelessWidget {
         );
       }),
     );
-  }
-
-  void _handleNotificationRedirect(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        Get.snackbar(
-          'Error',
-          'Could not open the notification link',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Invalid notification link',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
   }
 
   void _markAllAsRead(HomeController controller) async {

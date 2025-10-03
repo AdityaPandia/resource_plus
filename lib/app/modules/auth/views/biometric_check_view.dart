@@ -23,7 +23,7 @@ class _BiometricCheckViewState extends State<BiometricCheckView> {
     const orange = Color(0xFFF7941D);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -39,7 +39,7 @@ class _BiometricCheckViewState extends State<BiometricCheckView> {
               ),
               Card(
                 elevation: 8,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),

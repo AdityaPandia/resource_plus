@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -12,12 +11,9 @@ class PasswordView extends StatelessWidget {
     final AuthController controller = Get.find();
     final TextEditingController passwordController = TextEditingController();
     final theme = Theme.of(context);
-    const blue = Color(0xFF3B6EA5);
-    const green = Color(0xFF6BC04B);
-    const orange = Color(0xFFF7941D);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -33,11 +29,16 @@ class PasswordView extends StatelessWidget {
               ),
               Card(
                 elevation: 8,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                color: theme.colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -45,7 +46,7 @@ class PasswordView extends StatelessWidget {
                         'Enter Password',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: blue,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -55,59 +56,74 @@ class PasswordView extends StatelessWidget {
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock, color: green),
+                          prefixIcon: Icon(
+                            Icons.lock,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Obx(() => controller.isLoading.value
-                          ? const CircularProgressIndicator()
-                          : SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: orange,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                      Obx(
+                        () => controller.isLoading.value
+                            ? CircularProgressIndicator(
+                                color: theme.colorScheme.primary,
+                              )
+                            : SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.primary,
+                                    foregroundColor:
+                                        theme.colorScheme.onPrimary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
                                   ),
-                                ),
-                                onPressed: () async {
-                                  if (passwordController.text.isEmpty) {
-                                    Get.snackbar(
-                                      'Error', 
-                                      'Please enter your password', 
-                                      backgroundColor: Colors.redAccent, 
-                                      colorText: Colors.white
-                                    );
-                                    return;
-                                  }
-                                  
-                                  final result = await controller.validateUserLogin(passwordController.text);
-                                  
-                                  if (result['success']) {
-                                    controller.password.value = passwordController.text;
-                                    
-                                    // Check if password reset is needed
-                                    if (result['isNeedToResetPwd']) {
-                                      Get.toNamed(AppRoutes.newPassword);
-                                    } else {
-                                      // await GetStorage().write('isLoggedIn', true);
-                                      // Get.offAllNamed(AppRoutes.home);
-                                      //TODO ADD BIO
-                                      Get.toNamed(AppRoutes.biometricLink);
+                                  onPressed: () async {
+                                    if (passwordController.text.isEmpty) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Please enter your password',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError,
+                                      );
+                                      return;
                                     }
-                                  } else {
-                                    Get.snackbar(
-                                      'Error', 
-                                      result['message'] ?? 'Invalid password', 
-                                      backgroundColor: Colors.redAccent, 
-                                      colorText: Colors.white
-                                    );
-                                  }
-                                },
-                                child: const Text('Continue'),
+
+                                    final result = await controller
+                                        .validateUserLogin(
+                                          passwordController.text,
+                                        );
+
+                                    if (result['success']) {
+                                      controller.password.value =
+                                          passwordController.text;
+
+                                      // Check if password reset is needed
+                                      if (result['isNeedToResetPwd']) {
+                                        Get.toNamed(AppRoutes.newPassword);
+                                      } else {
+                                        // await GetStorage().write('isLoggedIn', true);
+                                        // Get.offAllNamed(AppRoutes.home);
+                                        //TODO ADD BIO
+                                        Get.toNamed(AppRoutes.biometricLink);
+                                      }
+                                    } else {
+                                      Get.snackbar(
+                                        'Error',
+                                        result['message'] ?? 'Invalid password',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError,
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Continue'),
+                                ),
                               ),
-                            )),
+                      ),
                     ],
                   ),
                 ),

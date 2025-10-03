@@ -6,6 +6,7 @@ abstract class AppRoutes {
   static const newPassword = '/new-password';
   static const biometricLink = '/biometric-link';
   static const biometricCheck = '/biometric-check';
+  static const permissionRequest = '/permission-request';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
   static const dynamicUrl = '/dynamic-url';

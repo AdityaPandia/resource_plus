@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'app/routes/app_pages.dart';
+import 'app/routes/app_routes.dart';
 import 'app/controllers/theme_controller.dart';
 import 'app/controllers/language_controller.dart';
 import 'app/translations/app_translations.dart';
 import 'app/services/notification_service.dart';
+import 'app/services/permission_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
+
   await GetStorage.init();
+
+  // Request camera and microphone permissions for WebView
+  await Permission.camera.request();
+  await Permission.microphone.request();
 
   // Initialize notification service
   final notificationService = NotificationService();
@@ -19,6 +28,23 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  String _getInitialRoute() {
+    final permissionService = PermissionService();
+    final isLoggedIn = GetStorage().read('isLoggedIn') == true;
+
+    // If this is the first time opening the app, show permission request
+    if (permissionService.isFirstTime) {
+      return AppRoutes.permissionRequest;
+    }
+
+    // Otherwise, route based on login status
+    if (isLoggedIn) {
+      return AppPages.bioCheck;
+    } else {
+      return AppPages.initialLogin;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +124,27 @@ class MyApp extends StatelessWidget {
           surface: const Color(0xFF1E1E1E),
           background: const Color(0xFF121212),
           error: orange,
+          onBackground: Colors.white,
+          onSurface: Colors.white,
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(color: Colors.white),
+          displayMedium: TextStyle(color: Colors.white),
+          displaySmall: TextStyle(color: Colors.white),
+          headlineLarge: TextStyle(color: Colors.white),
+          headlineMedium: TextStyle(color: Colors.white),
+          headlineSmall: TextStyle(color: Colors.white),
+          titleLarge: TextStyle(color: Colors.white),
+          titleMedium: TextStyle(color: Colors.white),
+          titleSmall: TextStyle(color: Colors.white),
+          bodyLarge: TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.white),
+          bodySmall: TextStyle(color: Colors.white70),
+          labelLarge: TextStyle(color: Colors.white),
+          labelMedium: TextStyle(color: Colors.white),
+          labelSmall: TextStyle(color: Colors.white70),
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
@@ -107,6 +154,8 @@ class MyApp extends StatelessWidget {
           ),
           fillColor: const Color(0xFF1E1E1E),
           filled: true,
+          labelStyle: const TextStyle(color: Colors.white70),
+          hintStyle: const TextStyle(color: Colors.white54),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -128,20 +177,23 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1E1E1E),
           elevation: 0,
-          iconTheme: IconThemeData(color: blue),
+          iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
+        cardTheme: const CardThemeData(color: Color(0xFF1E1E1E), elevation: 2),
+        listTileTheme: const ListTileThemeData(
+          textColor: Colors.white,
+          iconColor: Colors.white70,
+        ),
       ),
       themeMode: themeController.isDarkMode.value
           ? ThemeMode.dark
           : ThemeMode.light,
-      initialRoute: GetStorage().read('isLoggedIn') == true
-          ? AppPages.bioCheck //need to change to
-          : AppPages.initialLogin,
+      initialRoute: _getInitialRoute(),
       // : GetStorage().read('instanceName') == null ||
       //       GetStorage().read('instanceName').toString().isEmpty
       // ? AppPages.initialLogin

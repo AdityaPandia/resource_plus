@@ -31,7 +31,7 @@ class _InstanceScanViewState extends State<InstanceScanView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -47,7 +47,7 @@ class _InstanceScanViewState extends State<InstanceScanView> {
               ),
               Card(
                 elevation: 8,
-                color: Colors.white,
+                color: theme.colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -64,7 +64,7 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                         'instance_scan'.tr,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: blue,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -76,7 +76,10 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                               style: const TextStyle(fontSize: 16),
                               decoration: InputDecoration(
                                 labelText: 'instance_name'.tr,
-                                prefixIcon: Icon(Icons.domain, color: green),
+                                prefixIcon: Icon(
+                                  Icons.domain,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
                           ),
@@ -89,13 +92,18 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: blue.withOpacity(0.08),
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: blue, width: 1.5),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary,
+                                    width: 1.5,
+                                  ),
                                 ),
                                 child: Icon(
                                   Icons.qr_code_scanner,
-                                  color: blue,
+                                  color: theme.colorScheme.primary,
                                   size: 32,
                                 ),
                               ),
@@ -110,8 +118,8 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Text(
                                   controller.errorMessage.value,
-                                  style: const TextStyle(
-                                    color: Colors.red,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.error,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -121,13 +129,17 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                       const SizedBox(height: 8),
                       Obx(
                         () => controller.isLoading.value
-                            ? const CircularProgressIndicator()
+                            ? CircularProgressIndicator(
+                                color: theme.colorScheme.primary,
+                              )
                             : SizedBox(
                                 width: double.infinity,
                                 height: 48,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: orange,
+                                    backgroundColor: theme.colorScheme.primary,
+                                    foregroundColor:
+                                        theme.colorScheme.onPrimary,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
@@ -139,8 +151,9 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                                       Get.snackbar(
                                         'Error',
                                         'Please enter an instance name',
-                                        backgroundColor: Colors.redAccent,
-                                        colorText: Colors.white,
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError,
                                       );
                                       return;
                                     }
@@ -181,14 +194,17 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const blue = Color(0xFF3B6EA5);
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.colorScheme.surface,
         elevation: 0,
-        iconTheme: const IconThemeData(color: blue),
-        title: const Text('Scan QR Code', style: TextStyle(color: blue)),
+        iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
+        title: Text(
+          'Scan QR Code',
+          style: TextStyle(color: theme.colorScheme.onSurface),
+        ),
       ),
       body: Stack(
         children: [
@@ -207,7 +223,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Theme.of(context).brightness == Brightness.light
+                  ? Colors.black.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.7),
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               child: const Text(
                 'Align the QR code within the frame to scan.',

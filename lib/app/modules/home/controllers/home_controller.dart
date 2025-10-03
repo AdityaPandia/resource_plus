@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
@@ -97,11 +98,25 @@ class HomeController extends GetxController {
   // Profile Picture
   final RxString profilePictureUrl = ''.obs;
 
+  // Notification polling
+  Timer? _notificationTimer;
+  final RxBool isPollingEnabled = true.obs;
+  final RxInt pollingIntervalMinutes = 2.obs; // Check every 2 minutes
+  final RxBool isPollingActive = false.obs;
+
   @override
   void onInit() {
     super.onInit();
     fetchHomeData();
     initializeProfilePicture();
+    _loadPollingSettings();
+    _startNotificationPolling();
+  }
+
+  @override
+  void onClose() {
+    _stopNotificationPolling();
+    super.onClose();
   }
 
   void changeTab(int index) {
@@ -707,6 +722,178 @@ class HomeController extends GetxController {
     return null;
   }
 
+  // Notification Polling Methods
+  void _loadPollingSettings() {
+    final storage = GetStorage();
+    isPollingEnabled.value = storage.read('notificationPollingEnabled') ?? true;
+    pollingIntervalMinutes.value = storage.read('notificationPollingInterval') ?? 2;
+  }
+
+  void _savePollingSettings() {
+    final storage = GetStorage();
+    storage.write('notificationPollingEnabled', isPollingEnabled.value);
+    storage.write('notificationPollingInterval', pollingIntervalMinutes.value);
+  }
+
+  void _startNotificationPolling() {
+    if (!isPollingEnabled.value || isPollingActive.value) return;
+    
+    print('Starting notification polling every ${pollingIntervalMinutes.value} minutes');
+    isPollingActive.value = true;
+    
+    _notificationTimer = Timer.periodic(
+      Duration(minutes: pollingIntervalMinutes.value),
+      (timer) => _pollForNotifications(),
+    );
+  }
+
+  void _stopNotificationPolling() {
+    print('Stopping notification polling');
+    _notificationTimer?.cancel();
+    _notificationTimer = null;
+    isPollingActive.value = false;
+  }
+
+  Future<void> _pollForNotifications() async {
+    if (!isPollingEnabled.value) return;
+    
+    try {
+      print('Polling for new notifications...');
+      final previousCount = notifications.length;
+      
+      // Fetch notifications silently (without showing loading)
+      await _fetchNotificationDataSilently();
+      
+      final newCount = notifications.length;
+      
+      if (newCount > previousCount) {
+        print('New notifications detected! Count: $previousCount -> $newCount');
+        // Show local notification for new notifications
+        await _notificationService.showCustomNotification(
+          title: 'New Notifications',
+          body: 'You have ${newCount - previousCount} new notification(s)',
+          payload: 'new_notifications',
+        );
+      }
+    } catch (e) {
+      print('Error during notification polling: $e');
+    }
+  }
+
+  Future<void> _fetchNotificationDataSilently() async {
+    try {
+      String instanceName = await GetStorage().read('instanceName');
+      String userEmail = await GetStorage().read('email');
+
+      final languageController = Get.find<LanguageController>();
+
+      final response = await _dio.get(
+        'https://auto.resourceplus.app/Mobile/api/Client/GetNotifcnData',
+        queryParameters: {
+          'instanceName': instanceName,
+          'usrEmail': userEmail,
+          'lang': languageController.currentLangCode,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        // Parse Notifications
+        if (data['Notifications'] != null) {
+          try {
+            final notificationsList = data['Notifications'] as List;
+            final parsedNotifications = <Map<String, dynamic>>[];
+
+            for (final item in notificationsList) {
+              if (item is Map<String, dynamic>) {
+                parsedNotifications.add(item);
+              }
+            }
+
+            notifications.value = parsedNotifications;
+          } catch (e) {
+            print('Error parsing notifications during polling: $e');
+          }
+        }
+
+        // Parse Static Contents
+        if (data['StaticContents'] != null) {
+          try {
+            final staticContentsList = data['StaticContents'] as List;
+            final parsedStaticContents = <String, String>{};
+
+            for (final item in staticContentsList) {
+              if (item is Map<String, dynamic>) {
+                final contentType = item['ContentType'] as String?;
+                final contentText = item['ContentText'] as String?;
+                if (contentType != null && contentText != null) {
+                  parsedStaticContents[contentType] = contentText;
+                }
+              }
+            }
+
+            notificationStaticContents.value = parsedStaticContents;
+          } catch (e) {
+            print('Error parsing static contents during polling: $e');
+          }
+        }
+
+        // Parse Common Contents
+        if (data['CommonContents'] != null) {
+          try {
+            final commonContentsList = data['CommonContents'] as List;
+            final parsedCommonContents = <String, String>{};
+
+            for (final item in commonContentsList) {
+              if (item is Map<String, dynamic>) {
+                item.forEach((key, value) {
+                  if (value is String) {
+                    parsedCommonContents[key] = value;
+                  }
+                });
+              }
+            }
+
+            commonContents.value = parsedCommonContents;
+          } catch (e) {
+            print('Error parsing common contents during polling: $e');
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching notification data silently: $e');
+    }
+  }
+
+  // Public methods to control polling
+  void enableNotificationPolling() {
+    isPollingEnabled.value = true;
+    _savePollingSettings();
+    _startNotificationPolling();
+  }
+
+  void disableNotificationPolling() {
+    isPollingEnabled.value = false;
+    _savePollingSettings();
+    _stopNotificationPolling();
+  }
+
+  void updatePollingInterval(int minutes) {
+    pollingIntervalMinutes.value = minutes;
+    _savePollingSettings();
+    
+    // Restart polling with new interval
+    if (isPollingEnabled.value) {
+      _stopNotificationPolling();
+      _startNotificationPolling();
+    }
+  }
+
+  void forceNotificationCheck() {
+    _pollForNotifications();
+  }
+
   Future<void> fetchSettingsData() async {
     try {
       isSettingsLoading.value = true;
@@ -767,6 +954,16 @@ class HomeController extends GetxController {
 
   void refreshSettingsData() {
     fetchSettingsData();
+  }
+
+  // Refresh all data after language change
+  void refreshAllData() {
+    fetchHomeData();
+    fetchSettingsData();
+    fetchNotificationData();
+    fetchAttendanceData();
+    // Refresh profile picture URL with new language
+    initializeProfilePicture();
   }
 
   // Get Profile Picture URL

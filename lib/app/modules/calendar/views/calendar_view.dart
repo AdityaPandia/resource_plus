@@ -12,62 +12,62 @@ class CalendarView extends GetView<CalendarController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
+      body: SafeArea(
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary,
+                ),
               ),
-            ),
+            );
+          }
+
+          if (controller.errorMessage.value.isNotEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    controller.errorMessage.value,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: controller.initializeCalendar,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              // Header with connection status
+              _buildHeader(context),
+
+              // Calendar widget
+              Expanded(child: _buildCalendar(context)),
+            ],
           );
-        }
-
-        if (controller.errorMessage.value.isNotEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Error',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  controller.errorMessage.value,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: controller.initializeCalendar,
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            // Header with connection status
-            _buildHeader(context),
-
-            // Calendar widget
-            Expanded(
-              child: _buildCalendar(context),
-            ),
-          ],
-        );
-      }),
+        }),
+      ),
     );
   }
 
@@ -98,18 +98,18 @@ class CalendarView extends GetView<CalendarController> {
                 Text(
                   'Calendar',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   controller.isAuthenticated.value
                       ? 'Connected to Google Calendar'
                       : 'Not connected to Google Calendar',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: controller.isAuthenticated.value
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
+                    color: controller.isAuthenticated.value
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
                 ),
               ],
             ),
@@ -162,10 +162,12 @@ class CalendarView extends GetView<CalendarController> {
           startingDayOfWeek: StartingDayOfWeek.monday,
           calendarStyle: CalendarStyle(
             outsideDaysVisible: false,
-            weekendTextStyle:
-                TextStyle(color: Theme.of(context).colorScheme.error),
-            holidayTextStyle:
-                TextStyle(color: Theme.of(context).colorScheme.error),
+            weekendTextStyle: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+            ),
+            holidayTextStyle: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
           headerStyle: HeaderStyle(
             formatButtonVisible: false,
@@ -183,9 +185,7 @@ class CalendarView extends GetView<CalendarController> {
         const Divider(),
 
         // Events list for selected date
-        Expanded(
-          child: _buildEventsList(context),
-        ),
+        Expanded(child: _buildEventsList(context)),
       ],
     );
   }
@@ -197,8 +197,8 @@ class CalendarView extends GetView<CalendarController> {
         child: Text(
           'Select a date to view events',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              ),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+          ),
         ),
       );
     }
@@ -219,11 +219,8 @@ class CalendarView extends GetView<CalendarController> {
             Text(
               'No events for ${DateFormat('MMM dd, yyyy').format(selectedDate)}',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
-                  ),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
             if (controller.isAuthenticated.value) ...[
               const SizedBox(height: 16),
@@ -294,20 +291,18 @@ class CalendarView extends GetView<CalendarController> {
                   Icon(
                     Icons.location_on,
                     size: 16,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       event.location!,
                       style: TextStyle(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -359,10 +354,20 @@ class CalendarView extends GetView<CalendarController> {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final locationController = TextEditingController();
-    DateTime startTime =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 9, 0);
+    DateTime startTime = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      9,
+      0,
+    );
     DateTime endTime = DateTime(
-        selectedDate.year, selectedDate.month, selectedDate.day, 10, 0);
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      10,
+      0,
+    );
 
     showDialog(
       context: context,
@@ -400,8 +405,9 @@ class CalendarView extends GetView<CalendarController> {
               Row(
                 children: [
                   Expanded(
-                    child:
-                        Text('Start: ${DateFormat('HH:mm').format(startTime)}'),
+                    child: Text(
+                      'Start: ${DateFormat('HH:mm').format(startTime)}',
+                    ),
                   ),
                   Expanded(
                     child: Text('End: ${DateFormat('HH:mm').format(endTime)}'),

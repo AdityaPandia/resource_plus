@@ -11,12 +11,9 @@ class EmailVerificationView extends StatelessWidget {
     final AuthController controller = Get.find();
     final TextEditingController emailController = TextEditingController();
     final theme = Theme.of(context);
-    const blue = Color(0xFF3B6EA5);
-    const green = Color(0xFF6BC04B);
-    const orange = Color(0xFFF7941D);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -32,11 +29,16 @@ class EmailVerificationView extends StatelessWidget {
               ),
               Card(
                 elevation: 8,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                color: theme.colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -44,14 +46,16 @@ class EmailVerificationView extends StatelessWidget {
                         'Enter Email Address',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: blue,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'We\'ll send a verification code to your email',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.7,
+                          ),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -63,58 +67,76 @@ class EmailVerificationView extends StatelessWidget {
                         decoration: InputDecoration(
                           labelText: 'Email Address',
                           hintText: 'Enter your email address',
-                          prefixIcon: const Icon(Icons.alternate_email, color: green),
+                          prefixIcon: Icon(
+                            Icons.alternate_email,
+                            color: theme.colorScheme.primary,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: green, width: 2),
+                            borderSide: BorderSide(
+                              color: theme.colorScheme.primary,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Obx(() => controller.isLoading.value
-                          ? const CircularProgressIndicator()
-                          : SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: orange,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                      Obx(
+                        () => controller.isLoading.value
+                            ? CircularProgressIndicator(
+                                color: theme.colorScheme.primary,
+                              )
+                            : SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.primary,
+                                    foregroundColor:
+                                        theme.colorScheme.onPrimary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
                                   ),
+                                  onPressed: () async {
+                                    if (emailController.text.trim().isEmpty) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Please enter an email address',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError,
+                                      );
+                                      return;
+                                    }
+
+                                    final success = await controller
+                                        .sendVerificationCode(
+                                          emailController.text.trim(),
+                                        );
+                                    if (success) {
+                                      controller.emailOrPhone.value =
+                                          emailController.text.trim();
+                                      Get.toNamed(AppRoutes.codeVerification);
+                                    } else {
+                                      Get.snackbar(
+                                        'Error',
+                                        controller.errorMessage.value.isNotEmpty
+                                            ? controller.errorMessage.value
+                                            : 'Failed to send verification code',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError,
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Send Code'),
                                 ),
-                                onPressed: () async {
-                                  if (emailController.text.trim().isEmpty) {
-                                    Get.snackbar(
-                                      'Error', 
-                                      'Please enter an email address', 
-                                      backgroundColor: Colors.redAccent, 
-                                      colorText: Colors.white
-                                    );
-                                    return;
-                                  }
-                                  
-                                  final success = await controller.sendVerificationCode(emailController.text.trim());
-                                  if (success) {
-                                    controller.emailOrPhone.value = emailController.text.trim();
-                                    Get.toNamed(AppRoutes.codeVerification);
-                                  } else {
-                                    Get.snackbar(
-                                      'Error', 
-                                      controller.errorMessage.value.isNotEmpty 
-                                        ? controller.errorMessage.value 
-                                        : 'Failed to send verification code', 
-                                      backgroundColor: Colors.redAccent, 
-                                      colorText: Colors.white
-                                    );
-                                  }
-                                },
-                                child: const Text('Send Code'),
                               ),
-                            )),
+                      ),
                     ],
                   ),
                 ),

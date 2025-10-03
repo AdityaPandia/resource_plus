@@ -9,7 +9,7 @@ import '../../../../controllers/language_controller.dart';
 import '../../../auth/controllers/auth_controller.dart';
 
 class SettingsTab extends StatelessWidget {
-  const SettingsTab({Key? key}) : super(key: key);
+  const SettingsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class SettingsTab extends StatelessWidget {
     final languageController = Get.find<LanguageController>();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Obx(() {
         if (controller.isSettingsLoading.value) {
           return Center(
@@ -35,14 +35,22 @@ class SettingsTab extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+                Icon(
+                  Icons.error_outline,
+                  size: 80,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.red[300]
+                      : Colors.red[400],
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Error Loading Settings',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.red[700],
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.red[700]
+                        : Colors.red[400],
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -51,7 +59,12 @@ class SettingsTab extends StatelessWidget {
                   child: Text(
                     controller.settingsErrorMessage.value,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.grey[600]
+                          : Colors.grey[400],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -87,8 +100,8 @@ class SettingsTab extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.grey.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.3),
+                        ? Colors.grey.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.3),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 1),
@@ -105,7 +118,7 @@ class SettingsTab extends StatelessWidget {
                   const SizedBox(width: 12),
                   Text(
                     controller.settingsStaticContents['SettingsText'] ??
-                        'Settings',
+                        'settings'.tr,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -131,7 +144,7 @@ class SettingsTab extends StatelessWidget {
                         title:
                             controller
                                 .settingsStaticContents['PreferencesText'] ??
-                            'Preferences',
+                            'preferences'.tr,
                         items: [
                           Obx(
                             () => _buildSettingsItem(
@@ -150,14 +163,22 @@ class SettingsTab extends StatelessWidget {
                                         .currentLanguageDisplayName,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.grey[600],
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.light
+                                          ? Colors.grey[600]
+                                          : Colors.grey[300],
                                     ),
                                   ),
                                   const SizedBox(width: 4),
                                   Icon(
                                     Icons.arrow_forward_ios,
                                     size: 16,
-                                    color: Colors.grey[400],
+                                    color:
+                                        Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? Colors.grey[400]
+                                        : Colors.grey[300],
                                   ),
                                 ],
                               ),
@@ -176,7 +197,7 @@ class SettingsTab extends StatelessWidget {
                                 controller
                                     .settingsStaticContents['DarkModeText'] ??
                                 'Dark Mode',
-                            subtitle: 'Switch between light and dark themes',
+                            subtitle: 'switch_theme'.tr,
                             trailing: Obx(
                               () => Switch(
                                 value: themeController.isDarkMode.value,
@@ -197,11 +218,15 @@ class SettingsTab extends StatelessWidget {
                                 controller
                                     .settingsStaticContents['NotificationsText'] ??
                                 'Notifications',
-                            subtitle: 'Manage notification preferences',
+                            subtitle: 'manage_notifications'.tr,
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: Colors.grey[400],
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[400]
+                                  : Colors.grey[300],
                             ),
                             onTap: () {
                               _showNotificationSettings(context);
@@ -215,7 +240,11 @@ class SettingsTab extends StatelessWidget {
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: Colors.grey[400],
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[400]
+                                  : Colors.grey[300],
                             ),
                             onTap: () {
                               controller.showIndividualNotification(
@@ -248,7 +277,7 @@ class SettingsTab extends StatelessWidget {
                         context: context,
                         title:
                             controller.settingsStaticContents['SecurityText'] ??
-                            'Security',
+                            'security'.tr,
                         items: [
                           _buildSettingsItem(
                             context: context,
@@ -257,11 +286,15 @@ class SettingsTab extends StatelessWidget {
                                 controller
                                     .settingsStaticContents['ChangePasswordText'] ??
                                 'Change Password',
-                            subtitle: 'Update your account password',
+                            subtitle: 'update_password'.tr,
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: Colors.grey[400],
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[400]
+                                  : Colors.grey[300],
                             ),
                             onTap: () {
                               _showChangePasswordDialog(context);
@@ -274,11 +307,15 @@ class SettingsTab extends StatelessWidget {
                                 controller
                                     .settingsStaticContents['PrivacySettingsText'] ??
                                 'Privacy Settings',
-                            subtitle: 'Manage your privacy preferences',
+                            subtitle: 'manage_privacy'.tr,
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: Colors.grey[400],
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[400]
+                                  : Colors.grey[300],
                             ),
                             onTap: () {
                               _showPrivacySettings(context);
@@ -294,7 +331,7 @@ class SettingsTab extends StatelessWidget {
                         context: context,
                         title:
                             controller.settingsStaticContents['SupportText'] ??
-                            'Support',
+                            'support'.tr,
                         items: [
                           _buildSettingsItem(
                             context: context,
@@ -303,11 +340,15 @@ class SettingsTab extends StatelessWidget {
                                 controller
                                     .settingsStaticContents['HelpAndSupportText'] ??
                                 'Help & Support',
-                            subtitle: 'Get help and contact support',
+                            subtitle: 'get_help'.tr,
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: Colors.grey[400],
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[400]
+                                  : Colors.grey[300],
                             ),
                             onTap: () async {
                               await _openSupportURL();
@@ -321,7 +362,7 @@ class SettingsTab extends StatelessWidget {
                       // Sign Out Section
                       _buildSettingsSection(
                         context: context,
-                        title: 'Account',
+                        title: 'account'.tr,
                         items: [
                           _buildSettingsItem(
                             context: context,
@@ -330,11 +371,15 @@ class SettingsTab extends StatelessWidget {
                                 controller
                                     .settingsStaticContents['SignOutText'] ??
                                 'Sign out',
-                            subtitle: 'Sign out of your account',
+                            subtitle: 'sign_out_account'.tr,
                             trailing: Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
-                              color: Colors.grey[400],
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Colors.grey[400]
+                                  : Colors.grey[300],
                             ),
                             onTap: () async {
                               // Show confirmation dialog
@@ -414,8 +459,8 @@ class SettingsTab extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.grey.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.3),
+                    ? Colors.grey.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.3),
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 1),
@@ -451,13 +496,19 @@ class SettingsTab extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: isDestructive
-                      ? Colors.red.withOpacity(0.1)
-                      : Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      ? Colors.red.withValues(alpha: 0.1)
+                      : Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   icon,
-                  color: isDestructive ? Colors.red : const Color(0xFF2196F3),
+                  color: isDestructive
+                      ? (Theme.of(context).brightness == Brightness.light
+                            ? Colors.red
+                            : Colors.red[400])
+                      : Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
               ),
@@ -473,13 +524,18 @@ class SettingsTab extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                         color: isDestructive
                             ? Colors.red
-                            : const Color(0xFF333333),
+                            : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.grey[600]
+                            : Colors.grey[400],
+                      ),
                     ),
                   ],
                 ),
@@ -513,6 +569,8 @@ class SettingsTab extends StatelessWidget {
                     if (value != null) {
                       languageController.changeLanguage(value);
                       Navigator.of(context).pop();
+                      // Trigger a refresh of all data to get translated content
+                      Get.find<HomeController>().refreshAllData();
                     }
                   },
                 ),
@@ -526,6 +584,8 @@ class SettingsTab extends StatelessWidget {
                     if (value != null) {
                       languageController.changeLanguage(value);
                       Navigator.of(context).pop();
+                      // Trigger a refresh of all data to get translated content
+                      Get.find<HomeController>().refreshAllData();
                     }
                   },
                 ),
@@ -544,52 +604,141 @@ class SettingsTab extends StatelessWidget {
   }
 
   void _showNotificationSettings(BuildContext context) {
+    final controller = Get.find<HomeController>();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('notifications_settings'.tr),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Text('Push Notifications'),
-                trailing: Switch(
-                  value: true, // TODO: Get from settings
-                  onChanged: (value) {
-                    // TODO: Save notification preference
-                  },
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Obx(
+              () => AlertDialog(
+                title: Text('Notification Settings'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Live Notifications Toggle
+                      ListTile(
+                        title: Text('Live Notifications'),
+                        subtitle: Text(
+                          'Automatically check for new notifications',
+                        ),
+                        trailing: Switch(
+                          value: controller.isPollingEnabled.value,
+                          onChanged: (value) {
+                            if (value) {
+                              controller.enableNotificationPolling();
+                            } else {
+                              controller.disableNotificationPolling();
+                            }
+                          },
+                        ),
+                      ),
+
+                      // Polling Interval
+                      if (controller.isPollingEnabled.value) ...[
+                        ListTile(
+                          title: Text('Check Interval'),
+                          subtitle: Text(
+                            'How often to check for new notifications',
+                          ),
+                          trailing: DropdownButton<int>(
+                            value: controller.pollingIntervalMinutes.value,
+                            items: [1, 2, 5, 10, 15, 30].map((minutes) {
+                              return DropdownMenuItem<int>(
+                                value: minutes,
+                                child: Text(
+                                  '$minutes min${minutes == 1 ? '' : 's'}',
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.updatePollingInterval(value);
+                              }
+                            },
+                          ),
+                        ),
+
+                        // Polling Status
+                        ListTile(
+                          title: Text('Status'),
+                          subtitle: Text(
+                            controller.isPollingActive.value
+                                ? 'Active - Checking every ${controller.pollingIntervalMinutes.value} minutes'
+                                : 'Inactive',
+                          ),
+                          trailing: Icon(
+                            controller.isPollingActive.value
+                                ? Icons.check_circle
+                                : Icons.pause_circle,
+                            color: controller.isPollingActive.value
+                                ? Colors.green
+                                : Colors.grey,
+                          ),
+                        ),
+
+                        // Force Check Button
+                        ListTile(
+                          title: Text('Check Now'),
+                          subtitle: Text(
+                            'Manually check for new notifications',
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.refresh),
+                            onPressed: () {
+                              controller.forceNotificationCheck();
+                              Get.snackbar(
+                                'Checking',
+                                'Checking for new notifications...',
+                                backgroundColor: Colors.blue,
+                                colorText: Colors.white,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+
+                      const Divider(),
+
+                      // Push Notifications
+                      ListTile(
+                        title: Text('Push Notifications'),
+                        subtitle: Text(
+                          'Show local notifications for new messages',
+                        ),
+                        trailing: Switch(
+                          value: true, // TODO: Get from settings
+                          onChanged: (value) {
+                            // TODO: Save notification preference
+                          },
+                        ),
+                      ),
+
+                      // Email Notifications
+                      ListTile(
+                        title: Text('Email Notifications'),
+                        subtitle: Text('Receive notifications via email'),
+                        trailing: Switch(
+                          value: true, // TODO: Get from settings
+                          onChanged: (value) {
+                            // TODO: Save email preference
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('Close'),
+                  ),
+                ],
               ),
-              ListTile(
-                title: Text('Email Notifications'),
-                trailing: Switch(
-                  value: true, // TODO: Get from settings
-                  onChanged: (value) {
-                    // TODO: Save email preference
-                  },
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('cancel'.tr),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Get.snackbar(
-                  'Success',
-                  'Notification settings updated',
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                );
-              },
-              child: Text('save'.tr),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -782,7 +931,9 @@ class SettingsTab extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Get.context != null
+                  ? Theme.of(Get.context!).colorScheme.surface
+                  : Colors.white,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Column(

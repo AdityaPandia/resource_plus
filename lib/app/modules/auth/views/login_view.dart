@@ -61,7 +61,7 @@ class _LoginViewState extends State<LoginView> {
     const orange = Color(0xFFF7941D);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -77,7 +77,7 @@ class _LoginViewState extends State<LoginView> {
               ),
               Card(
                 elevation: 8,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -94,7 +94,7 @@ class _LoginViewState extends State<LoginView> {
                         'Login',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: blue,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -103,7 +103,7 @@ class _LoginViewState extends State<LoginView> {
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
                           labelText: 'Username or Email',
-                          prefixIcon: const Icon(Icons.person, color: green),
+                          prefixIcon: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -113,7 +113,7 @@ class _LoginViewState extends State<LoginView> {
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock, color: green),
+                          prefixIcon: Icon(Icons.lock, color: Theme.of(context).colorScheme.primary),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -125,15 +125,18 @@ class _LoginViewState extends State<LoginView> {
                               // Get.toNamed(AppRoutes.forgotPassword);
                               Get.toNamed(AppRoutes.newPassword);
                             },
-                            child: const Text('Forgot Password?'),
+                            child: Text(
+                              'Forgot Password?',
+                              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                            ),
                           ),
                           // Show biometric button only if available and set up
                           if (!_isCheckingBiometric && _biometricAvailable)
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.fingerprint,
                                 size: 32,
-                                color: green,
+                                color: Theme.of(context).colorScheme.primary,
                               ),
                               onPressed: () async {
                                 final result = await controller
@@ -164,13 +167,17 @@ class _LoginViewState extends State<LoginView> {
                       const SizedBox(height: 16),
                       Obx(
                         () => controller.isLoading.value
-                            ? const CircularProgressIndicator()
+                            ? CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.primary,
+                                ),
+                              )
                             : SizedBox(
                                 width: double.infinity,
                                 height: 48,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: orange,
+                                    backgroundColor: Theme.of(context).colorScheme.primary,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),

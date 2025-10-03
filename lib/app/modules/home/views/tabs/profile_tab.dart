@@ -11,28 +11,26 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HomeController>();
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Obx(() {
         if (controller.isProfileLoading.value) {
           return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
             ),
           );
         }
-        
+
         if (controller.hasProfileError.value) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[300],
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
                   'Error Loading Profile',
@@ -47,8 +45,8 @@ class ProfileTab extends StatelessWidget {
                   controller.profileErrorMessage.value,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).brightness == Brightness.light 
-                        ? Colors.grey[600] 
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[600]
                         : Colors.grey[400],
                   ),
                   textAlign: TextAlign.center,
@@ -59,7 +57,10 @@ class ProfileTab extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
                   child: const Text('Retry'),
                 ),
@@ -67,7 +68,7 @@ class ProfileTab extends StatelessWidget {
             ),
           );
         }
-        
+
         return RefreshIndicator(
           onRefresh: () async => controller.refreshProfileData(),
           child: SingleChildScrollView(
@@ -96,7 +97,7 @@ class ProfileTab extends StatelessWidget {
       }),
     );
   }
-  
+
   Widget _buildHeader(BuildContext context, HomeController controller) {
     return Container(
       width: double.infinity,
@@ -110,7 +111,9 @@ class ProfileTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.black.withOpacity(0.1)
+                : Colors.black.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -147,16 +150,12 @@ class ProfileTab extends StatelessWidget {
                       },
                     ),
                   )
-                : const Icon(
-                    Icons.person,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+                : const Icon(Icons.person, size: 40, color: Colors.white),
           ),
           const SizedBox(height: 16),
           Text(
-            controller.profileEmployeeName.value.isNotEmpty 
-                ? controller.profileEmployeeName.value 
+            controller.profileEmployeeName.value.isNotEmpty
+                ? controller.profileEmployeeName.value
                 : 'Employee Name',
             style: const TextStyle(
               fontSize: 24,
@@ -167,8 +166,8 @@ class ProfileTab extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            controller.profileEmpNumber.value.isNotEmpty 
-                ? 'ID: ${controller.profileEmpNumber.value}' 
+            controller.profileEmpNumber.value.isNotEmpty
+                ? 'ID: ${controller.profileEmpNumber.value}'
                 : 'Employee ID',
             style: TextStyle(
               fontSize: 16,
@@ -179,12 +178,17 @@ class ProfileTab extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildContactInformation(BuildContext context, HomeController controller) {
-    final contactText = controller.profileStaticContents['ContactText'] ?? 'Contact Information';
+
+  Widget _buildContactInformation(
+    BuildContext context,
+    HomeController controller,
+  ) {
+    final contactText =
+        controller.profileStaticContents['ContactText'] ??
+        'Contact Information';
     final emailText = controller.profileStaticContents['Emailext'] ?? 'Email';
     final phoneText = controller.profileStaticContents['PhoneText'] ?? 'Phone';
-    
+
     return _buildSection(
       context: context,
       title: contactText,
@@ -194,8 +198,8 @@ class ProfileTab extends StatelessWidget {
           context: context,
           icon: Icons.email,
           label: emailText,
-          value: controller.profileEmpEmail.value.isNotEmpty 
-              ? controller.profileEmpEmail.value 
+          value: controller.profileEmpEmail.value.isNotEmpty
+              ? controller.profileEmpEmail.value
               : 'Not provided',
         ),
         const SizedBox(height: 12),
@@ -203,57 +207,68 @@ class ProfileTab extends StatelessWidget {
           context: context,
           icon: Icons.phone,
           label: phoneText,
-          value: controller.profileEmpMobile.value.isNotEmpty 
-              ? controller.profileEmpMobile.value 
+          value: controller.profileEmpMobile.value.isNotEmpty
+              ? controller.profileEmpMobile.value
               : 'Not provided',
         ),
       ],
     );
   }
-  
-  Widget _buildWorkInformation(BuildContext context, HomeController controller) {
-    final workText = controller.profileStaticContents['WorkText'] ?? 'Work Information';
-    final companyText = controller.profileStaticContents['Companytext'] ?? 'Company';
-    final departmentText = controller.profileStaticContents['DepartmentText'] ?? 'Department';
-    final joinText = controller.profileStaticContents['JoinText'] ?? 'Join Date';
-    
+
+  Widget _buildWorkInformation(
+    BuildContext context,
+    HomeController controller,
+  ) {
+    final workText =
+        controller.profileStaticContents['WorkText'] ?? 'Work Information';
+    final companyText =
+        controller.profileStaticContents['Companytext'] ?? 'Company';
+    final departmentText =
+        controller.profileStaticContents['DepartmentText'] ?? 'Department';
+    final joinText =
+        controller.profileStaticContents['JoinText'] ?? 'Join Date';
+
     return _buildSection(
       context: context,
       title: workText,
       icon: Icons.work,
       children: [
         if (controller.workInformation.isNotEmpty)
-          ...controller.workInformation.map((work) => Column(
-            children: [
-              _buildInfoRow(
-                context: context,
-                icon: Icons.business,
-                label: companyText,
-                value: work['Company']?.toString() ?? 'Not provided',
-              ),
-              const SizedBox(height: 12),
-              _buildInfoRow(
-                context: context,
-                icon: Icons.account_tree,
-                label: departmentText,
-                value: work['Organization']?.toString() ?? 'Not provided',
-              ),
-              const SizedBox(height: 12),
-              _buildInfoRow(
-                context: context,
-                icon: Icons.calendar_today,
-                label: joinText,
-                value: work['DateOfJoin']?.toString() ?? 'Not provided',
-              ),
-              const SizedBox(height: 12),
-              _buildInfoRow(
-                context: context,
-                icon: Icons.badge,
-                label: 'Position',
-                value: work['PositionName']?.toString() ?? 'Not provided',
-              ),
-            ],
-          )).toList()
+          ...controller.workInformation
+              .map(
+                (work) => Column(
+                  children: [
+                    _buildInfoRow(
+                      context: context,
+                      icon: Icons.business,
+                      label: companyText,
+                      value: work['Company']?.toString() ?? 'Not provided',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoRow(
+                      context: context,
+                      icon: Icons.account_tree,
+                      label: departmentText,
+                      value: work['Organization']?.toString() ?? 'Not provided',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoRow(
+                      context: context,
+                      icon: Icons.calendar_today,
+                      label: joinText,
+                      value: work['DateOfJoin']?.toString() ?? 'Not provided',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildInfoRow(
+                      context: context,
+                      icon: Icons.badge,
+                      label: 'Position',
+                      value: work['PositionName']?.toString() ?? 'Not provided',
+                    ),
+                  ],
+                ),
+              )
+              .toList()
         else
           _buildInfoRow(
             context: context,
@@ -264,10 +279,10 @@ class ProfileTab extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildSkills(BuildContext context, HomeController controller) {
     final skillText = controller.profileStaticContents['SkillText'] ?? 'Skills';
-    
+
     return _buildSection(
       context: context,
       title: skillText,
@@ -277,24 +292,35 @@ class ProfileTab extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: controller.skills.map((skill) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                ),
-              ),
-              child: Text(
-                skill['Skill']?.toString() ?? '',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            )).toList(),
+            children: controller.skills
+                .map(
+                  (skill) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Text(
+                      skill['Skill']?.toString() ?? '',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           )
         else
           _buildInfoRow(
@@ -306,47 +332,53 @@ class ProfileTab extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildCertifications(BuildContext context, HomeController controller) {
-    final certText = controller.profileStaticContents['CertificationsText'] ?? 'Certifications';
-    
+    final certText =
+        controller.profileStaticContents['CertificationsText'] ??
+        'Certifications';
+
     return _buildSection(
       context: context,
       title: certText,
       icon: Icons.verified,
       children: [
         if (controller.certifications.isNotEmpty)
-          ...controller.certifications.map((cert) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF4CAF50).withOpacity(0.3),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.verified,
-                  color: const Color(0xFF4CAF50),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    cert['Certification']?.toString() ?? '',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onSurface,
+          ...controller.certifications
+              .map(
+                (cert) => Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFF4CAF50).withOpacity(0.3),
                     ),
                   ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.verified,
+                        color: const Color(0xFF4CAF50),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          cert['Certification']?.toString() ?? '',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          )).toList()
+              )
+              .toList()
         else
           _buildInfoRow(
             context: context,
@@ -357,7 +389,7 @@ class ProfileTab extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildSection({
     required BuildContext context,
     required String title,
@@ -372,7 +404,7 @@ class ProfileTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).brightness == Brightness.light 
+            color: Theme.of(context).brightness == Brightness.light
                 ? Colors.black.withOpacity(0.05)
                 : Colors.black.withOpacity(0.2),
             blurRadius: 10,
@@ -388,14 +420,14 @@ class ProfileTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(
-        icon,
-        color: Theme.of(context).colorScheme.primary,
-        size: 20,
-      ),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -414,7 +446,7 @@ class ProfileTab extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildInfoRow({
     required BuildContext context,
     required IconData icon,
@@ -427,8 +459,8 @@ class ProfileTab extends StatelessWidget {
         Icon(
           icon,
           size: 20,
-          color: Theme.of(context).brightness == Brightness.light 
-              ? Colors.grey[600] 
+          color: Theme.of(context).brightness == Brightness.light
+              ? Colors.grey[600]
               : Colors.grey[400],
         ),
         const SizedBox(width: 12),
@@ -441,8 +473,8 @@ class ProfileTab extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).brightness == Brightness.light 
-                      ? Colors.grey[600] 
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey[600]
                       : Colors.grey[400],
                 ),
               ),
@@ -461,7 +493,7 @@ class ProfileTab extends StatelessWidget {
       ],
     );
   }
-  
+
   // Widget _buildLogoutButton(BuildContext context) {
   //   return Container(
   //     width: double.infinity,
@@ -471,7 +503,7 @@ class ProfileTab extends StatelessWidget {
   //       borderRadius: BorderRadius.circular(12),
   //       boxShadow: [
   //         BoxShadow(
-  //           color: Theme.of(context).brightness == Brightness.light 
+  //           color: Theme.of(context).brightness == Brightness.light
   //               ? Colors.black.withOpacity(0.05)
   //               : Colors.black.withOpacity(0.2),
   //           blurRadius: 10,
@@ -539,4 +571,4 @@ class ProfileTab extends StatelessWidget {
   //     ),
   //   );
   // }
-} 
+}

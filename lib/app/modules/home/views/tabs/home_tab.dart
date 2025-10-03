@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/home_controller.dart';
 import '../../../../routes/app_routes.dart';
 
@@ -205,7 +206,7 @@ class HomeTab extends GetView<HomeController> {
 
   Widget _buildWelcomeSection(BuildContext context) {
     final welcomeText =
-        controller.staticContents['WelcomeText'] ?? 'Welcome Back';
+        controller.staticContents['WelcomeText'] ?? 'welcome_back'.tr;
 
     return Text(
       welcomeText,
@@ -222,7 +223,7 @@ class HomeTab extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Dashboard',
+          'dashboard'.tr,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -341,10 +342,11 @@ class HomeTab extends GetView<HomeController> {
   }
 
   Widget _buildHrPortalSection() {
-    final headText = controller.staticContents['HrLinkHeadText'] ?? 'HR Portal';
+    final headText =
+        controller.staticContents['HrLinkHeadText'] ?? 'hr_portal'.tr;
     final subheadText =
         controller.staticContents['HrLinkSubheadText'] ??
-        'Access HR Services and information';
+        'access_hr_services'.tr;
 
     return GestureDetector(
       onTap: () async {
@@ -354,8 +356,8 @@ class HomeTab extends GetView<HomeController> {
 
           if (webLink == null || webLink.toString().isEmpty) {
             Get.snackbar(
-              'Error',
-              'HR Portal link not available',
+              'error'.tr,
+              'hr_portal_link_error'.tr,
               backgroundColor: Colors.redAccent,
               colorText: Colors.white,
             );
@@ -365,16 +367,36 @@ class HomeTab extends GetView<HomeController> {
           final String urlString = webLink.toString();
           print('URL String: $urlString');
 
-          // Navigate to in-app WebView instead of external browser
+          // Navigate to in-app WebView
           Get.toNamed(
             AppRoutes.webview,
             parameters: {'url': urlString, 'title': 'HR Portal'},
           );
+
+          // // Open in external browser instead of in-app WebView (COMMENTED)
+          // final Uri url = Uri.parse(urlString);
+          // if (await canLaunchUrl(url)) {
+          //   await launchUrl(
+          //     url,
+          //     mode: LaunchMode.externalApplication, // Force external browser
+          //   );
+          //
+          //   // Show success message
+          //   Get.snackbar(
+          //     'success'.tr,
+          //     'hr_portal_opened_browser'.tr,
+          //     backgroundColor: Colors.green,
+          //     colorText: Colors.white,
+          //     duration: const Duration(seconds: 2),
+          //   );
+          // } else {
+          //   throw Exception('Could not launch $urlString');
+          // }
         } catch (e) {
           print('Error opening HR Portal: $e');
           Get.snackbar(
-            'Error',
-            'Error opening HR Portal: ${e.toString()}',
+            'error'.tr,
+            '${'hr_portal_error'.tr}: ${e.toString()}',
             backgroundColor: Colors.redAccent,
             colorText: Colors.white,
           );

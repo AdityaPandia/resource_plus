@@ -47,5 +47,9 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>This app uses Face ID to authenticate users for secure login.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos and videos in the HR Portal.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for video calls and audio recording in the HR Portal.</string>
 </dict>
 </plist>

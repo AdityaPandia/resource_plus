@@ -180,9 +180,9 @@ class AuthController extends GetxController {
             'password',
             password,
           ); // Store password for biometric login
-      
+
           await GetStorage().write('instanceName', instanceName.value);
-      // Enable biometric login
+          // Enable biometric login
 
           isLoading.value = false;
           return {
@@ -235,31 +235,82 @@ class AuthController extends GetxController {
         },
         options: Options(responseType: ResponseType.json),
       );
-      if (response.statusCode == 200 &&
-          response.data is List &&
-          response.data.isNotEmpty) {
-        final data = response.data[0];
-        final isValid = data['IsValid'] == true;
-        if (isValid) {
-          isLoading.value = false;
-          return {
-            'success': true,
-            'message': data['RsltMessage'] ?? 'Password changed successfully',
-          };
+      // Debug: Print the actual response
+      print('Change Password API Response Status: ${response.statusCode}');
+      print('Change Password API Response Data: ${response.data}');
+      print('Response Data Type: ${response.data.runtimeType}');
+
+      if (response.statusCode == 200) {
+        // Handle different response formats
+        dynamic data;
+
+        if (response.data is List) {
+          if (response.data.isNotEmpty) {
+            // Original format: List with first element
+            data = response.data[0];
+            print('Using List format - First element: $data');
+          } else {
+            // Empty array - likely means success (common pattern for some APIs)
+            print('Empty array response - treating as success');
+            isLoading.value = false;
+            return {
+              'success': true,
+              'message': 'Password changed successfully',
+            };
+          }
+        } else if (response.data is Map) {
+          // Direct Map format
+          data = response.data;
+          print('Using Map format: $data');
         } else {
-          errorMessage.value = data['RsltMessage'] ?? 'Password change failed';
+          // Handle other formats
+          print('Unexpected response format: ${response.data}');
+          errorMessage.value = 'Unexpected response format from server.';
           isLoading.value = false;
           return {
             'success': false,
-            'message': data['RsltMessage'] ?? 'Password change failed',
+            'message': 'Unexpected response format from server.',
+          };
+        }
+
+        // Check if data contains the expected fields
+        if (data is Map && data.containsKey('IsValid')) {
+          final isValid = data['IsValid'] == true;
+          print('IsValid: $isValid, RsltMessage: ${data['RsltMessage']}');
+
+          if (isValid) {
+            isLoading.value = false;
+            return {
+              'success': true,
+              'message': data['RsltMessage'] ?? 'Password changed successfully',
+            };
+          } else {
+            errorMessage.value =
+                data['RsltMessage'] ?? 'Password change failed';
+            isLoading.value = false;
+            return {
+              'success': false,
+              'message': data['RsltMessage'] ?? 'Password change failed',
+            };
+          }
+        } else {
+          print(
+            'Response missing IsValid field. Available keys: ${data is Map ? data.keys.toList() : 'Not a Map'}',
+          );
+          errorMessage.value = 'Response missing required fields.';
+          isLoading.value = false;
+          return {
+            'success': false,
+            'message': 'Response missing required fields.',
           };
         }
       } else {
-        errorMessage.value = 'Unexpected response from server.';
+        errorMessage.value =
+            'Server returned status code: ${response.statusCode}';
         isLoading.value = false;
         return {
           'success': false,
-          'message': 'Unexpected response from server.',
+          'message': 'Server returned status code: ${response.statusCode}',
         };
       }
     } catch (e) {
@@ -386,7 +437,8 @@ class AuthController extends GetxController {
       // Handle specific platform exceptions
       if (e.toString().contains('no_fragment_activity')) {
         print(
-            'Debug: FragmentActivity error - MainActivity needs to extend FlutterFragmentActivity');
+          'Debug: FragmentActivity error - MainActivity needs to extend FlutterFragmentActivity',
+        );
       } else if (e.toString().contains('NotAvailable')) {
         print('Debug: Biometric hardware not available');
       } else if (e.toString().contains('NotEnrolled')) {
