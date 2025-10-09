@@ -139,7 +139,8 @@ class _WebViewPageState extends State<WebViewPage> {
                 mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
                 domStorageEnabled: true,
                 databaseEnabled: true,
-                hardwareAcceleration: true, // Enable for better performance
+                hardwareAcceleration:
+                    false, // Disable to prevent renderer crashes
                 safeBrowsingEnabled: false,
                 thirdPartyCookiesEnabled: true,
                 userAgent:

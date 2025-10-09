@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -109,6 +110,7 @@ class PasswordView extends StatelessWidget {
                                         // Get.offAllNamed(AppRoutes.home);
                                         //TODO ADD BIO
                                         Get.toNamed(AppRoutes.biometricLink);
+
                                       }
                                     } else {
                                       Get.snackbar(

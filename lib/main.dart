@@ -11,7 +11,7 @@ import 'app/services/notification_service.dart';
 import 'app/services/permission_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
 
   await GetStorage.init();
 
@@ -40,7 +40,10 @@ class MyApp extends StatelessWidget {
 
     // Otherwise, route based on login status
     if (isLoggedIn) {
-      return AppPages.bioCheck;
+      // return AppPages.bioCheck;
+      return GetStorage().read('hasBiometric') == true
+          ? AppRoutes.biometricCheck
+          : AppRoutes.home;
     } else {
       return AppPages.initialLogin;
     }

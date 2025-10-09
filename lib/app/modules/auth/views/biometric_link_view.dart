@@ -263,19 +263,21 @@ class _BiometricLinkViewState extends State<BiometricLinkView> {
                               ),
                             ),
                       const SizedBox(height: 16),
-                      // TextButton(
-                      //   onPressed: () {
-                      //     // Skip biometric setup and go back to home
-                      //     Get.offAllNamed(AppRoutes.home);
-                      //   },
-                      //   child: Text(
-                      //     'Skip for now',
-                      //     style: TextStyle(
-                      //       color: Colors.grey[600],
-                      //       fontSize: 16,
-                      //     ),
-                      //   ),
-                      // ),
+                      TextButton(
+                        onPressed: () async {
+                          // Skip biometric setup
+                          await GetStorage().write('hasBiometric', false);
+                          await GetStorage().write('isLoggedIn', true);
+                          Get.offAllNamed(AppRoutes.home);
+                        },
+                        child: Text(
+                          'Skip Biometric',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
