@@ -11,7 +11,7 @@ class WebViewPage extends StatefulWidget {
   final String title;
 
   const WebViewPage({Key? key, required this.url, required this.title})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<WebViewPage> createState() => _WebViewPageState();
@@ -139,8 +139,7 @@ class _WebViewPageState extends State<WebViewPage> {
                 mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
                 domStorageEnabled: true,
                 databaseEnabled: true,
-                hardwareAcceleration:
-                    false, // Disable to prevent renderer crashes
+                hardwareAcceleration: true, // Enable for hardware bitmap support
                 safeBrowsingEnabled: false,
                 thirdPartyCookiesEnabled: true,
                 userAgent:

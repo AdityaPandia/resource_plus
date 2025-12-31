@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
 import '../../../routes/app_routes.dart';
 
@@ -103,7 +102,10 @@ class _LoginViewState extends State<LoginView> {
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
                           labelText: 'Username or Email',
-                          prefixIcon: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
+                          prefixIcon: Icon(
+                            Icons.person,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -113,7 +115,10 @@ class _LoginViewState extends State<LoginView> {
                         style: const TextStyle(fontSize: 16),
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock, color: Theme.of(context).colorScheme.primary),
+                          prefixIcon: Icon(
+                            Icons.lock,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -127,7 +132,9 @@ class _LoginViewState extends State<LoginView> {
                             },
                             child: Text(
                               'Forgot Password?',
-                              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                             ),
                           ),
                           // Show biometric button only if available and set up
@@ -177,7 +184,9 @@ class _LoginViewState extends State<LoginView> {
                                 height: 48,
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
@@ -205,12 +214,12 @@ class _LoginViewState extends State<LoginView> {
                                         // Route to new password screen
                                         Get.offAllNamed(AppRoutes.newPassword);
                                       } else {
-                                        // Route to home screen
-                                        await GetStorage().write(
-                                          'isLoggedIn',
-                                          true,
+                                        // After login, always route to biometric link page
+                                        // User must setup biometric again (or skip)
+                                        // Don't save isLoggedIn yet - will be saved after biometric setup/skip
+                                        Get.offAllNamed(
+                                          AppRoutes.biometricLink,
                                         );
-                                        Get.offAllNamed(AppRoutes.home);
                                       }
                                     } else {
                                       Get.snackbar(

@@ -12,4 +12,5 @@ abstract class AppRoutes {
   static const dynamicUrl = '/dynamic-url';
   static const webview = '/webview';
   static const home = '/home';
+  static const hrPortal = '/hr-portal';
 }

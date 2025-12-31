@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:resource_plus/app/routes/app_pages.dart';
 import '../../../../routes/app_routes.dart';
 import '../../controllers/home_controller.dart';
 import '../../../../controllers/theme_controller.dart';
@@ -100,8 +99,8 @@ class SettingsTab extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.grey.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.3),
+                        ? Colors.grey.withOpacity(0.1)
+                        : Colors.black.withOpacity(0.3),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 1),
@@ -410,10 +409,11 @@ class SettingsTab extends StatelessWidget {
                               );
 
                               if (shouldSignOut == true) {
-                                await GetStorage().remove('instanceName');
-                                await GetStorage().remove('isLoggedIn');
+                                // Clear all data except instanceName (so user can login again without re-entering instance)
+                                // Clear biometric settings so user must setup again after logout
                                 await Get.put(AuthController()).logout();
-                                Get.offAllNamed(AppPages.initialLogin);
+                                // Route to login page (not instance scan)
+                                Get.offAllNamed(AppRoutes.login);
                               }
                             },
                             isDestructive: true,
@@ -459,8 +459,8 @@ class SettingsTab extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Theme.of(context).brightness == Brightness.light
-                    ? Colors.grey.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.3),
+                    ? Colors.grey.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.3),
                 spreadRadius: 1,
                 blurRadius: 3,
                 offset: const Offset(0, 1),
@@ -496,10 +496,8 @@ class SettingsTab extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: isDestructive
-                      ? Colors.red.withValues(alpha: 0.1)
-                      : Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
+                      ? Colors.red.withOpacity(0.1)
+                      : Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -709,21 +707,13 @@ class SettingsTab extends StatelessWidget {
                           'Show local notifications for new messages',
                         ),
                         trailing: Switch(
-                          value: true, // TODO: Get from settings
+                          value: controller.pushNotificationsEnabled.value,
                           onChanged: (value) {
-                            // TODO: Save notification preference
-                          },
-                        ),
-                      ),
-
-                      // Email Notifications
-                      ListTile(
-                        title: Text('Email Notifications'),
-                        subtitle: Text('Receive notifications via email'),
-                        trailing: Switch(
-                          value: true, // TODO: Get from settings
-                          onChanged: (value) {
-                            // TODO: Save email preference
+                            if (value) {
+                              controller.enablePushNotifications();
+                            } else {
+                              controller.disablePushNotifications();
+                            }
                           },
                         ),
                       ),
@@ -805,14 +795,98 @@ class SettingsTab extends StatelessWidget {
                       ? CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: () async {
+                            final currentPassword = currentPasswordController
+                                .text
+                                .trim();
                             final newPassword = newPasswordController.text
                                 .trim();
+                            final confirmPassword = confirmPasswordController
+                                .text
+                                .trim();
                             final currentContext = context;
+
+                            // Validation: Check all fields are filled
+                            if (currentPassword.isEmpty) {
+                              Get.snackbar(
+                                'Error',
+                                'Please enter your current password',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
 
                             if (newPassword.isEmpty) {
                               Get.snackbar(
                                 'Error',
                                 'Please enter a new password',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            if (confirmPassword.isEmpty) {
+                              Get.snackbar(
+                                'Error',
+                                'Please confirm your new password',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            // Validation: Check passwords match
+                            if (newPassword != confirmPassword) {
+                              Get.snackbar(
+                                'Error',
+                                'New password and confirm password do not match',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            // Validation: Check password length (minimum 6 characters)
+                            if (newPassword.length < 6) {
+                              Get.snackbar(
+                                'Error',
+                                'Password must be at least 6 characters long',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            // Validation: Check current password is correct
+                            // Get stored password from storage
+                            final storedPassword =
+                                GetStorage().read('password') ?? '';
+                            if (storedPassword.isEmpty) {
+                              Get.snackbar(
+                                'Error',
+                                'Unable to verify current password. Please try logging out and logging in again.',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            if (currentPassword != storedPassword) {
+                              Get.snackbar(
+                                'Error',
+                                'Current password is incorrect',
+                                backgroundColor: Colors.redAccent,
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            // Validation: Check new password is different from current
+                            if (newPassword == currentPassword) {
+                              Get.snackbar(
+                                'Error',
+                                'New password must be different from current password',
                                 backgroundColor: Colors.redAccent,
                                 colorText: Colors.white,
                               );
@@ -828,13 +902,45 @@ class SettingsTab extends StatelessWidget {
                               }
 
                               if (result['success']) {
+                                // Show success message
                                 Get.snackbar(
                                   'Success',
                                   result['message'] ??
-                                      'Password changed successfully',
+                                      'Password changed successfully. Please login again.',
                                   backgroundColor: Colors.green,
                                   colorText: Colors.white,
+                                  duration: const Duration(seconds: 2),
                                 );
+
+                                // Wait a moment for the snackbar to show
+                                await Future.delayed(
+                                  const Duration(milliseconds: 500),
+                                );
+
+                                // Clear all storage and logout (keep instanceName only)
+                                // Clear biometric settings so user must setup again after password change
+                                await GetStorage().remove('isLoggedIn');
+                                await GetStorage().remove('email');
+                                await GetStorage().remove('password');
+                                await GetStorage().remove('username');
+                                await GetStorage().remove('empDisplayName');
+                                await GetStorage().remove('webLink');
+                                await GetStorage().remove('hasBiometric');
+                                await GetStorage().remove('biometricEnabled');
+                                await GetStorage().remove(
+                                  'biometricSetupComplete',
+                                );
+
+                                // Reset controller state
+                                authController.emailOrPhone.value = '';
+                                authController.password.value = '';
+                                authController.newPassword.value = '';
+                                authController.confirmPassword.value = '';
+                                authController.verificationCode.value = '';
+                                authController.errorMessage.value = '';
+
+                                // Clear all routes and navigate to login page
+                                Get.offAllNamed(AppRoutes.login);
                               } else {
                                 Get.snackbar(
                                   'Error',
@@ -922,74 +1028,38 @@ class SettingsTab extends StatelessWidget {
   }
 
   Future<void> _openSupportURL() async {
+    final controller = Get.find<HomeController>();
+    final String titleText = controller
+            .settingsStaticContents['HelpAndSupportText'] ??
+        'Help & Support';
+
     try {
-      final controller = Get.find<HomeController>();
-
-      // Show loading indicator
-      Get.dialog(
-        Center(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Get.context != null
-                  ? Theme.of(Get.context!).colorScheme.surface
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Loading support page...'),
-              ],
-            ),
-          ),
-        ),
-        barrierDismissible: false,
-      );
-
-      // Fetch support URL from API
+      // Fetch support URL from API (without loading dialog)
       final supportURL = await controller.getSupportURL();
 
-      // Close loading dialog
-      Get.back();
-
+      String urlToOpen;
       if (supportURL != null && supportURL.isNotEmpty) {
-        // Navigate to WebView with support URL
-        Get.toNamed(
-          AppRoutes.webview,
-          parameters: {'url': supportURL, 'title': 'Help & Support'},
-        );
+        urlToOpen = supportURL;
       } else {
         // Fallback to default support URL if API fails
-        Get.toNamed(
-          AppRoutes.webview,
-          parameters: {
-            'url': 'https://resourceplus.app/contact-us/',
-            'title': 'Help & Support',
-          },
-        );
-      }
-    } catch (e) {
-      // Close loading dialog if still open
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
+        urlToOpen = 'https://resourceplus.app/contact-us/';
       }
 
-      // Show error and fallback to default URL
-      Get.snackbar(
-        'Info',
-        'Opening default support page',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
+      // Open URL in in-app WebView
+      Get.toNamed(
+        AppRoutes.webview,
+        parameters: {
+          'url': urlToOpen,
+          'title': titleText,
+        },
       );
-
+    } catch (e) {
+      // Fallback to default URL if error occurs
       Get.toNamed(
         AppRoutes.webview,
         parameters: {
           'url': 'https://resourceplus.app/contact-us/',
-          'title': 'Help & Support',
+          'title': titleText,
         },
       );
     }

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
+import 'package:intl/date_symbol_data_local.dart';
 import '../../../services/calendar_service.dart';
 
 class CalendarController extends GetxController {
@@ -23,15 +24,28 @@ class CalendarController extends GetxController {
   // Calendar view state
   final Rx<DateTime> focusedDate = DateTime.now().obs;
   final Rx<DateTime?> selectedDate = DateTime.now().obs;
-  final Rx<DateTime> firstDate =
-      DateTime.now().subtract(const Duration(days: 365)).obs;
-  final Rx<DateTime> lastDate =
-      DateTime.now().add(const Duration(days: 365)).obs;
+  final Rx<DateTime> firstDate = DateTime.now()
+      .subtract(const Duration(days: 365))
+      .obs;
+  final Rx<DateTime> lastDate = DateTime.now()
+      .add(const Duration(days: 365))
+      .obs;
 
   @override
   void onInit() {
     super.onInit();
+    _initializeDateFormatting();
     initializeCalendar();
+  }
+
+  // Initialize date formatting for locales
+  Future<void> _initializeDateFormatting() async {
+    try {
+      await initializeDateFormatting('en_US', null);
+      await initializeDateFormatting('ar_SA', null);
+    } catch (e) {
+      print('Error initializing date formatting: $e');
+    }
   }
 
   // Initialize calendar service
@@ -116,10 +130,7 @@ class CalendarController extends GetxController {
   }
 
   // Load events for a specific date range
-  Future<void> loadEvents({
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
+  Future<void> loadEvents({DateTime? startDate, DateTime? endDate}) async {
     try {
       if (!isAuthenticated.value) return;
 
@@ -140,8 +151,9 @@ class CalendarController extends GetxController {
     try {
       if (!isAuthenticated.value) return;
 
-      final todayEventList =
-          await _calendarService.getTodayEvents(selectedCalendarId.value);
+      final todayEventList = await _calendarService.getTodayEvents(
+        selectedCalendarId.value,
+      );
       todayEvents.value = todayEventList;
     } catch (e) {
       print('Error loading today\'s events: $e');

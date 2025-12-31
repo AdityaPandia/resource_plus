@@ -92,11 +92,26 @@ class _PermissionRequestViewState extends State<PermissionRequestView> {
   }
 
   void _continueToApp() {
+    // Mark permissions as requested
+    _permissionService.markPermissionsRequested();
+
     // Navigate to the appropriate screen based on login status
     final isLoggedIn = GetStorage().read('isLoggedIn') == true;
 
     if (isLoggedIn) {
-      Get.offAllNamed(AppRoutes.home);
+      // Check if biometric is enabled and setup is complete (not skipped)
+      final hasBiometric = GetStorage().read('hasBiometric');
+      final biometricEnabled = GetStorage().read('biometricEnabled') == true;
+      final biometricSetupComplete =
+          GetStorage().read('biometricSetupComplete') == true;
+
+      // Show biometric screen if enabled and properly set up
+      if (hasBiometric == true && biometricEnabled && biometricSetupComplete) {
+        Get.offAllNamed(AppRoutes.biometricCheck);
+      } else {
+        // Skip biometric screen if skipped or not properly set up
+        Get.offAllNamed(AppRoutes.home);
+      }
     } else {
       Get.offAllNamed(AppRoutes.instanceScan);
     }

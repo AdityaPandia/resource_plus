@@ -14,7 +14,8 @@ class AttendanceTab extends GetView<HomeController> {
           return Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary),
+                Theme.of(context).colorScheme.primary,
+              ),
             ),
           );
         }
@@ -24,14 +25,10 @@ class AttendanceTab extends GetView<HomeController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[300],
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
-                  'Error Loading Attendance Data',
+                  'error_loading_attendance'.tr,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -55,9 +52,11 @@ class AttendanceTab extends GetView<HomeController> {
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
-                  child: const Text('Retry'),
+                  child: Text('retry'.tr),
                 ),
               ],
             ),
@@ -115,7 +114,7 @@ class AttendanceTab extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Attendance Rate',
+          'attendance_rate'.tr,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -145,22 +144,24 @@ class AttendanceTab extends GetView<HomeController> {
               children: [
                 Expanded(
                   child: _buildRateCard(
-                      context,
-                      'Present',
-                      controller.attendanceRate.first['PresentPercentage'] ??
-                          '0.00',
-                      '%',
-                      Colors.green),
+                    context,
+                    'present'.tr,
+                    controller.attendanceRate.first['PresentPercentage'] ??
+                        '0.00',
+                    '%',
+                    Colors.green,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildRateCard(
-                      context,
-                      'Absent',
-                      controller.attendanceRate.first['AbsentPercentage'] ??
-                          '0.00',
-                      '%',
-                      Colors.red),
+                    context,
+                    'absent'.tr,
+                    controller.attendanceRate.first['AbsentPercentage'] ??
+                        '0.00',
+                    '%',
+                    Colors.red,
+                  ),
                 ),
               ],
             ),
@@ -169,8 +170,13 @@ class AttendanceTab extends GetView<HomeController> {
     );
   }
 
-  Widget _buildRateCard(BuildContext context, String title, String value,
-      String unit, Color color) {
+  Widget _buildRateCard(
+    BuildContext context,
+    String title,
+    String value,
+    String unit,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -206,7 +212,7 @@ class AttendanceTab extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Attendance Summary',
+          'attendance_summary'.tr,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -238,7 +244,8 @@ class AttendanceTab extends GetView<HomeController> {
     final countType = item['CountType'] ?? '';
     final noOfDays = item['NoOfDays'] ?? 0;
     Color cardColor;
-    IconData icon;
+    IconData? icon;
+    bool isLessThan = false;
     switch (countType.toLowerCase()) {
       case 'absent':
         cardColor = Colors.red;
@@ -255,6 +262,10 @@ class AttendanceTab extends GetView<HomeController> {
       case 'present':
         cardColor = Colors.blue;
         icon = Icons.check_circle;
+        break;
+      case 'less':
+        cardColor = Colors.orange;
+        isLessThan = true;
         break;
       default:
         cardColor = Theme.of(context).colorScheme.primary;
@@ -284,15 +295,30 @@ class AttendanceTab extends GetView<HomeController> {
               color: cardColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: cardColor,
-              size: 20,
-            ),
+            child: isLessThan
+                ? Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '<',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                : Icon(icon, color: cardColor, size: 20),
           ),
           const SizedBox(height: 8),
           Text(
-            countType,
+            _translateAttendanceType(countType),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -301,7 +327,7 @@ class AttendanceTab extends GetView<HomeController> {
           ),
           const SizedBox(height: 4),
           Text(
-            '$noOfDays days',
+            '$noOfDays ${'days'.tr}',
             style: TextStyle(
               fontSize: 12,
               color: Theme.of(context).brightness == Brightness.light
@@ -315,8 +341,9 @@ class AttendanceTab extends GetView<HomeController> {
   }
 
   Widget _buildRecentActivitiesSection(BuildContext context) {
-    final recentText = controller.attendanceStaticContents['RecentText'] ??
-        'Recent Attendance';
+    final recentText =
+        controller.attendanceStaticContents['RecentText'] ??
+        'recent_attendance'.tr;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +372,9 @@ class AttendanceTab extends GetView<HomeController> {
   }
 
   Widget _buildActivityCard(
-      BuildContext context, Map<String, dynamic> activity) {
+    BuildContext context,
+    Map<String, dynamic> activity,
+  ) {
     final attDate = activity['AttDate'] ?? '';
     final dayType = activity['DayType'] ?? '';
     final checkIn = activity['CheckIN'] ?? '';
@@ -403,13 +432,15 @@ class AttendanceTab extends GetView<HomeController> {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        dayType,
+                        _translateAttendanceType(dayType),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -427,13 +458,13 @@ class AttendanceTab extends GetView<HomeController> {
                         Icon(Icons.login, size: 16, color: Colors.green),
                         const SizedBox(width: 8),
                         Text(
-                          'Check-in: $checkIn',
+                          '${'check_in'.tr}: $checkIn',
                           style: TextStyle(
                             fontSize: 14,
                             color:
                                 Theme.of(context).brightness == Brightness.light
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400],
+                                ? Colors.grey[600]
+                                : Colors.grey[400],
                           ),
                         ),
                       ],
@@ -445,13 +476,13 @@ class AttendanceTab extends GetView<HomeController> {
                         Icon(Icons.logout, size: 16, color: Colors.red),
                         const SizedBox(width: 8),
                         Text(
-                          'Check-out: $checkOut',
+                          '${'check_out'.tr}: $checkOut',
                           style: TextStyle(
                             fontSize: 14,
                             color:
                                 Theme.of(context).brightness == Brightness.light
-                                    ? Colors.grey[600]
-                                    : Colors.grey[400],
+                                ? Colors.grey[600]
+                                : Colors.grey[400],
                           ),
                         ),
                       ],
@@ -459,7 +490,7 @@ class AttendanceTab extends GetView<HomeController> {
                   ],
                 ] else ...[
                   Text(
-                    'No check-in/out data',
+                    'no_checkin_data'.tr,
                     style: TextStyle(
                       fontSize: 14,
                       color: Theme.of(context).brightness == Brightness.light
@@ -482,7 +513,7 @@ class AttendanceTab extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Legend',
+          'legend'.tr,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -543,7 +574,7 @@ class AttendanceTab extends GetView<HomeController> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              dayType,
+              _translateAttendanceType(dayType),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -564,11 +595,29 @@ class AttendanceTab extends GetView<HomeController> {
     );
   }
 
-  Color _hexToColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    if (hex.length == 6) {
-      hex = 'FF$hex';
+  // Translate attendance types from API (case-insensitive)
+  String _translateAttendanceType(String type) {
+    if (type.isEmpty) return type;
+
+    final lowerType = type.toLowerCase().trim();
+
+    // Map common attendance types to translation keys
+    switch (lowerType) {
+      case 'absent':
+        return 'absent'.tr;
+      case 'present':
+        return 'present'.tr;
+      case 'early':
+        return 'early'.tr;
+      case 'late':
+        return 'late'.tr;
+      case 'week end':
+      case 'weekend':
+      case 'week_end':
+        return 'week_end'.tr;
+      default:
+        // If no translation found, return original
+        return type;
     }
-    return Color(int.parse(hex, radix: 16));
   }
 }

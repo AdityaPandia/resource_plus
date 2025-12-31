@@ -53,9 +53,7 @@ class EmailVerificationView extends StatelessWidget {
                       Text(
                         'We\'ll send a verification code to your email',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.7,
-                          ),
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -113,10 +111,10 @@ class EmailVerificationView extends StatelessWidget {
                                       return;
                                     }
 
-                                    final success = await controller
-                                        .sendVerificationCode(
-                                          emailController.text.trim(),
-                                        );
+                                    final success =
+                                        await controller.sendVerificationCode(
+                                      emailController.text.trim(),
+                                    );
                                     if (success) {
                                       controller.emailOrPhone.value =
                                           emailController.text.trim();

@@ -201,7 +201,16 @@ class NotificationTab extends StatelessWidget {
                         itemCount: controller.notifications.length,
                         itemBuilder: (context, index) {
                           final notification = controller.notifications[index];
-                          final isRead = notification['ReadStatus'] == 'True';
+                          // Check multiple possible formats for read status
+                          final readStatusValue =
+                              notification['ReadStatus'] ??
+                              notification['IsRead'] ??
+                              notification['isRead'];
+                          final isRead =
+                              readStatusValue == 'True' ||
+                              readStatusValue == 'true' ||
+                              readStatusValue == 1 ||
+                              readStatusValue == true;
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -225,7 +234,7 @@ class NotificationTab extends StatelessWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
-                                onTap: () {
+                                onTap: () async {
                                   // Handle notification redirection using BaseUrl + QueryString
                                   final baseUrl =
                                       controller.commonContents['BaseUrl'];
@@ -240,37 +249,96 @@ class NotificationTab extends StatelessWidget {
                                     final fullUrl =
                                         baseUrl + queryString.toString();
 
-                                    // Open in in-app WebView
-                                    Get.toNamed(
-                                      AppRoutes.webview,
-                                      parameters: {
-                                        'url': fullUrl,
-                                        'title':
-                                            notification['NotifcnTitle'] ??
-                                            'Notification',
-                                      },
-                                    );
+                                    try {
+                                      // Open in in-app WebView
+                                      final notificationTitle =
+                                          notification['NotifcnTitle'] ?? 'Notification';
+                                      Get.toNamed(
+                                        AppRoutes.webview,
+                                        parameters: {
+                                          'url': fullUrl,
+                                          'title': notificationTitle.toString(),
+                                        },
+                                      );
 
-                                    // Mark as read if not already read
-                                    if (!isRead) {
-                                      controller.updateNotificationReadStatus(
-                                        int.tryParse(
+                                      // Mark as read if not already read
+                                      if (!isRead) {
+                                        final notificationId =
+                                            int.tryParse(
                                               notification['NotifcnID']
                                                   .toString(),
                                             ) ??
-                                            0,
-                                        1,
+                                            0;
+
+                                        // Optimistically update local state immediately
+                                        final currentIndex = controller
+                                            .notifications
+                                            .indexWhere(
+                                              (n) =>
+                                                  (int.tryParse(
+                                                        n['NotifcnID']
+                                                            .toString(),
+                                                      ) ??
+                                                      0) ==
+                                                  notificationId,
+                                            );
+                                        if (currentIndex >= 0) {
+                                          controller
+                                                  .notifications[currentIndex] =
+                                              Map<String, dynamic>.from(
+                                                controller
+                                                    .notifications[currentIndex],
+                                              )..['ReadStatus'] = 'True';
+                                        }
+
+                                        // Update backend
+                                        controller
+                                            .updateNotificationReadStatus(
+                                              notificationId,
+                                              1,
+                                            );
+                                      }
+                                    } catch (e) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Failed to open URL: $e',
+                                        backgroundColor: Colors.red,
+                                        colorText: Colors.white,
+                                        snackPosition: SnackPosition.BOTTOM,
                                       );
                                     }
                                   } else {
                                     // Fallback: just mark as read if no URL available
                                     if (!isRead) {
+                                      final notificationId =
+                                          int.tryParse(
+                                            notification['NotifcnID']
+                                                .toString(),
+                                          ) ??
+                                          0;
+
+                                      // Optimistically update local state immediately
+                                      final currentIndex = controller
+                                          .notifications
+                                          .indexWhere(
+                                            (n) =>
+                                                (int.tryParse(
+                                                      n['NotifcnID'].toString(),
+                                                    ) ??
+                                                    0) ==
+                                                notificationId,
+                                          );
+                                      if (currentIndex >= 0) {
+                                        controller.notifications[currentIndex] =
+                                            Map<String, dynamic>.from(
+                                              controller
+                                                  .notifications[currentIndex],
+                                            )..['ReadStatus'] = 'True';
+                                      }
+
+                                      // Update backend
                                       controller.updateNotificationReadStatus(
-                                        int.tryParse(
-                                              notification['NotifcnID']
-                                                  .toString(),
-                                            ) ??
-                                            0,
+                                        notificationId,
                                         1,
                                       );
                                     }
@@ -289,13 +357,13 @@ class NotificationTab extends StatelessWidget {
                                         decoration: BoxDecoration(
                                           color: isRead
                                               ? (Theme.of(context).brightness ==
-                                                        Brightness.light
-                                                    ? Colors.grey[200]
-                                                    : Colors.grey[800])
+                                                      Brightness.light
+                                                  ? Colors.grey[200]
+                                                  : Colors.grey[800])
                                               : Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.1),
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
@@ -304,9 +372,9 @@ class NotificationTab extends StatelessWidget {
                                           Icons.notifications,
                                           color: isRead
                                               ? (Theme.of(context).brightness ==
-                                                        Brightness.light
-                                                    ? Colors.grey[600]
-                                                    : Colors.grey[400])
+                                                      Brightness.light
+                                                  ? Colors.grey[600]
+                                                  : Colors.grey[400])
                                               : Theme.of(
                                                   context,
                                                 ).colorScheme.primary,
@@ -337,15 +405,15 @@ class NotificationTab extends StatelessWidget {
                                                           ? (Theme.of(
                                                                       context,
                                                                     ).brightness ==
-                                                                    Brightness
-                                                                        .light
+                                                                  Brightness
+                                                                      .light
                                                                 ? Colors
                                                                       .grey[700]
-                                                                : Colors
-                                                                      .grey[300])
+                                                              : Colors
+                                                                  .grey[300])
                                                           : Theme.of(context)
-                                                                .colorScheme
-                                                                .onSurface,
+                                                              .colorScheme
+                                                              .onSurface,
                                                     ),
                                                   ),
                                                 ),
@@ -399,15 +467,43 @@ class NotificationTab extends StatelessWidget {
                                       if (!isRead)
                                         IconButton(
                                           onPressed: () {
+                                            final notificationId =
+                                                int.tryParse(
+                                                  notification['NotifcnID']
+                                                      .toString(),
+                                                ) ??
+                                                0;
+
+                                            // Optimistically update local state immediately
+                                            final currentIndex = controller
+                                                .notifications
+                                                .indexWhere(
+                                                  (n) =>
+                                                      (int.tryParse(
+                                                            n['NotifcnID']
+                                                                .toString(),
+                                                          ) ??
+                                                          0) ==
+                                                      notificationId,
+                                                );
+                                            if (currentIndex >= 0) {
+                                              controller
+                                                      .notifications[currentIndex] =
+                                                  Map<String, dynamic>.from(
+                                                      controller
+                                                          .notifications[currentIndex],
+                                                    )
+                                                    ..['ReadStatus'] = 'True'
+                                                    ..['IsRead'] = 1
+                                                    ..['isRead'] = 1;
+                                            }
+
+                                            // Update backend
                                             controller
                                                 .updateNotificationReadStatus(
-                                                  int.tryParse(
-                                                        notification['NotifcnID']
-                                                            .toString(),
-                                                      ) ??
-                                                      0,
-                                                  1,
-                                                );
+                                                  notificationId,
+                                              1,
+                                            );
                                           },
                                           icon: Icon(
                                             Icons.check_circle_outline,
@@ -436,25 +532,67 @@ class NotificationTab extends StatelessWidget {
 
   void _markAllAsRead(HomeController controller) async {
     try {
-      // Mark all unread notifications as read
-      for (final notification in controller.notifications) {
+      // Optimistically update local state immediately
+      final unreadNotificationIds = <int>[];
+
+      // First, identify all unread notifications and update local state
+      for (var i = 0; i < controller.notifications.length; i++) {
+        final notification = controller.notifications[i];
+        // Use same robust check as UI
+        final readStatusValue =
+            notification['ReadStatus'] ??
+            notification['IsRead'] ??
+            notification['isRead'];
         final isRead =
-            notification['IsRead'] == 1 || notification['isRead'] == 1;
+            readStatusValue == 'True' ||
+            readStatusValue == 'true' ||
+            readStatusValue == 1 ||
+            readStatusValue == true;
+
         if (!isRead) {
-          await controller.updateNotificationReadStatus(
-            int.tryParse(notification['NotifcnID'].toString()) ?? 0,
-            1,
-          );
+          final notificationId =
+              int.tryParse(notification['NotifcnID'].toString()) ?? 0;
+          if (notificationId > 0) {
+            unreadNotificationIds.add(notificationId);
+            // Update local state immediately for instant UI feedback
+            // Set both possible field names to ensure UI updates correctly
+            controller.notifications[i] =
+                Map<String, dynamic>.from(notification)
+                  ..['ReadStatus'] = 'True'
+                  ..['IsRead'] = 1
+                  ..['isRead'] = 1;
         }
       }
+      }
 
+      // Show success message immediately
       Get.snackbar(
         'Success',
         'All notifications marked as read',
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
+
+      // Update backend in background (non-blocking)
+      // Make API calls for all unread notifications without refreshing after each
+      for (final notificationId in unreadNotificationIds) {
+        try {
+          await controller.updateNotificationReadStatus(
+            notificationId,
+            1,
+            refreshAfterUpdate: false,
+          );
+        } catch (e) {
+          print('Error updating notification $notificationId: $e');
+        }
+      }
+
+      // Wait a moment for API to process updates, then refresh to ensure consistency
+      await Future.delayed(const Duration(milliseconds: 500));
+      await controller.fetchNotificationData();
     } catch (e) {
+      // If something fails, refresh from API to restore correct state
+      await controller.fetchNotificationData();
       Get.snackbar(
         'Error',
         'Failed to mark notifications as read',

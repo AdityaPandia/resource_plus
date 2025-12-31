@@ -92,9 +92,8 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary.withValues(
-                                    alpha: 0.08,
-                                  ),
+                                  color: theme.colorScheme.primary
+                                      .withOpacity(0.08),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: theme.colorScheme.primary,
@@ -145,8 +144,8 @@ class _InstanceScanViewState extends State<InstanceScanView> {
                                     ),
                                   ),
                                   onPressed: () async {
-                                    final instance = instanceController.text
-                                        .trim();
+                                    final instance =
+                                        instanceController.text.trim();
                                     if (instance.isEmpty) {
                                       Get.snackbar(
                                         'Error',
@@ -224,8 +223,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
             alignment: Alignment.bottomCenter,
             child: Container(
               color: Theme.of(context).brightness == Brightness.light
-                  ? Colors.black.withValues(alpha: 0.5)
-                  : Colors.black.withValues(alpha: 0.7),
+                  ? Colors.black.withOpacity(0.5)
+                  : Colors.black.withOpacity(0.7),
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               child: const Text(
                 'Align the QR code within the frame to scan.',

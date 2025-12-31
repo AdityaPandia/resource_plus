@@ -30,10 +30,12 @@ class CodeVerificationView extends StatelessWidget {
               Card(
                 elevation: 8,
                 color: theme.colorScheme.surface,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24)),
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -48,7 +50,7 @@ class CodeVerificationView extends StatelessWidget {
                       Text(
                         'We\'ve sent a 6-digit code to ${controller.emailOrPhone.value}',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -57,25 +59,29 @@ class CodeVerificationView extends StatelessWidget {
                         controller: codeController,
                         keyboardType: TextInputType.number,
                         maxLength: 6,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           labelText: 'Verification Code',
                           hintText: 'Enter 6-digit code',
                           counterText: '',
-                          prefixIcon: Icon(Icons.lock, color: theme.colorScheme.primary),
+                          prefixIcon: Icon(Icons.lock,
+                              color: theme.colorScheme.primary),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                            borderSide: BorderSide(
+                                color: theme.colorScheme.primary, width: 2),
                           ),
                         ),
                       ),
                       const SizedBox(height: 24),
                       Obx(() => controller.isLoading.value
-                          ? CircularProgressIndicator(color: theme.colorScheme.primary)
+                          ? CircularProgressIndicator(
+                              color: theme.colorScheme.primary)
                           : SizedBox(
                               width: double.infinity,
                               height: 48,
@@ -89,38 +95,39 @@ class CodeVerificationView extends StatelessWidget {
                                 ),
                                 onPressed: () async {
                                   if (codeController.text.trim().isEmpty) {
-                                    Get.snackbar(
-                                      'Error', 
-                                      'Please enter the verification code', 
-                                      backgroundColor: theme.colorScheme.error, 
-                                      colorText: theme.colorScheme.onError
-                                    );
+                                    Get.snackbar('Error',
+                                        'Please enter the verification code',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError);
                                     return;
                                   }
-                                  
+
                                   if (codeController.text.trim().length != 6) {
-                                    Get.snackbar(
-                                      'Error', 
-                                      'Please enter a 6-digit verification code', 
-                                      backgroundColor: theme.colorScheme.error, 
-                                      colorText: theme.colorScheme.onError
-                                    );
+                                    Get.snackbar('Error',
+                                        'Please enter a 6-digit verification code',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError);
                                     return;
                                   }
-                                  
-                                  final success = await controller.validateVerificationCode(codeController.text.trim());
+
+                                  final success =
+                                      await controller.validateVerificationCode(
+                                          codeController.text.trim());
                                   if (success) {
-                                    controller.verificationCode.value = codeController.text.trim();
+                                    controller.verificationCode.value =
+                                        codeController.text.trim();
                                     Get.toNamed(AppRoutes.password);
                                   } else {
                                     Get.snackbar(
-                                      'Error', 
-                                      controller.errorMessage.value.isNotEmpty 
-                                        ? controller.errorMessage.value 
-                                        : 'Invalid verification code', 
-                                      backgroundColor: theme.colorScheme.error, 
-                                      colorText: theme.colorScheme.onError
-                                    );
+                                        'Error',
+                                        controller.errorMessage.value.isNotEmpty
+                                            ? controller.errorMessage.value
+                                            : 'Invalid verification code',
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        colorText: theme.colorScheme.onError);
                                   }
                                 },
                                 child: const Text('Verify'),
@@ -133,28 +140,28 @@ class CodeVerificationView extends StatelessWidget {
                           Text(
                             'Didn\'t receive the code? ',
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                              color:
+                                  theme.colorScheme.onSurface.withOpacity(0.7),
                             ),
                           ),
                           GestureDetector(
                             onTap: () async {
-                              final success = await controller.sendVerificationCode(controller.emailOrPhone.value);
+                              final success =
+                                  await controller.sendVerificationCode(
+                                      controller.emailOrPhone.value);
                               if (success) {
-                                Get.snackbar(
-                                  'Success', 
-                                  'Verification code resent successfully', 
-                                  backgroundColor: theme.colorScheme.primary, 
-                                  colorText: theme.colorScheme.onPrimary
-                                );
+                                Get.snackbar('Success',
+                                    'Verification code resent successfully',
+                                    backgroundColor: theme.colorScheme.primary,
+                                    colorText: theme.colorScheme.onPrimary);
                               } else {
                                 Get.snackbar(
-                                  'Error', 
-                                  controller.errorMessage.value.isNotEmpty 
-                                    ? controller.errorMessage.value 
-                                    : 'Failed to resend code', 
-                                  backgroundColor: theme.colorScheme.error, 
-                                  colorText: theme.colorScheme.onError
-                                );
+                                    'Error',
+                                    controller.errorMessage.value.isNotEmpty
+                                        ? controller.errorMessage.value
+                                        : 'Failed to resend code',
+                                    backgroundColor: theme.colorScheme.error,
+                                    colorText: theme.colorScheme.onError);
                               }
                             },
                             child: Text(

@@ -7,17 +7,35 @@ import 'tabs/profile_tab.dart';
 import 'tabs/notification_tab.dart';
 import 'tabs/settings_tab.dart';
 import '../../calendar/views/calendar_view.dart';
-import '../../calendar/controllers/calendar_controller.dart';
-import '../../../controllers/language_controller.dart';
+import 'package:resource_plus/app/routes/app_routes.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final languageController = Get.find<LanguageController>();
-
     return Scaffold(
+      floatingActionButton: Obx(() {
+        // Show FAB only on home tab
+        if (controller.currentIndex.value == 0) {
+          return FloatingActionButton.extended(
+            onPressed: () {
+              Get.toNamed(AppRoutes.hrPortal);
+            },
+            icon: const Icon(Icons.access_time, color: Colors.white),
+            label: Text(
+              'attendance_punch'.tr,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: Colors.orange[600],
+            elevation: 4,
+          );
+        }
+        return const SizedBox.shrink();
+      }),
       body: Obx(() {
         switch (controller.currentIndex.value) {
           case 0:
@@ -47,30 +65,32 @@ class HomeView extends GetView<HomeController> {
               : Colors.grey[400],
           backgroundColor: Theme.of(context).colorScheme.surface,
           elevation: 8,
+          showSelectedLabels: true,
+          showUnselectedLabels: false,
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.home),
-              label: 'Home',
+              label: 'home'.tr,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.access_time),
-              label: 'Attendance',
+              label: 'attendance'.tr,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.person),
-              label: 'Profile',
+              label: 'profile'.tr,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.notifications),
-              label: 'Notifications',
+              label: 'notifications'.tr,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.calendar_today),
-              label: 'Calendar',
+              label: 'calendar'.tr,
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.settings),
-              label: 'Settings',
+              label: 'settings'.tr,
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/controllers/theme_controller.dart';
@@ -9,11 +10,20 @@ import 'app/controllers/language_controller.dart';
 import 'app/translations/app_translations.dart';
 import 'app/services/notification_service.dart';
 import 'app/services/permission_service.dart';
+import 'app/services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await GetStorage.init();
+
+  // Initialize date formatting for all locales
+  await initializeDateFormatting('en_US', null);
+  await initializeDateFormatting('ar_SA', null);
+
+  // Initialize API service with SSL certificate handling
+  final apiService = ApiService();
+  apiService.initialize();
 
   // Request camera and microphone permissions for WebView
   await Permission.camera.request();
@@ -40,10 +50,21 @@ class MyApp extends StatelessWidget {
 
     // Otherwise, route based on login status
     if (isLoggedIn) {
-      // return AppPages.bioCheck;
-      return GetStorage().read('hasBiometric') == true
-          ? AppRoutes.biometricCheck
-          : AppRoutes.home;
+      // Check if biometric is enabled and setup is complete (not skipped)
+      final hasBiometric = GetStorage().read('hasBiometric');
+      final biometricEnabled = GetStorage().read('biometricEnabled') == true;
+      final biometricSetupComplete =
+          GetStorage().read('biometricSetupComplete') == true;
+
+      // Show biometric screen if:
+      // 1. hasBiometric is true (not skipped), AND
+      // 2. biometric is enabled AND setup is complete
+      if (hasBiometric == true && biometricEnabled && biometricSetupComplete) {
+        return AppRoutes.biometricCheck;
+      } else {
+        // Skip biometric screen if skipped or not properly set up
+        return AppRoutes.home;
+      }
     } else {
       return AppPages.initialLogin;
     }

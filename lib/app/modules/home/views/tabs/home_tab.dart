@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/home_controller.dart';
 import '../../../../routes/app_routes.dart';
 
@@ -349,56 +348,21 @@ class HomeTab extends GetView<HomeController> {
         'access_hr_services'.tr;
 
     return GestureDetector(
-      onTap: () async {
-        try {
-          final webLink = GetStorage().read('webLink');
-          print('webLink: $webLink');
-
-          if (webLink == null || webLink.toString().isEmpty) {
-            Get.snackbar(
-              'error'.tr,
-              'hr_portal_link_error'.tr,
-              backgroundColor: Colors.redAccent,
-              colorText: Colors.white,
-            );
-            return;
-          }
-
-          final String urlString = webLink.toString();
-          print('URL String: $urlString');
-
-          // Navigate to in-app WebView
+      onTap: () {
+        // Open HR Portal URL in in-app WebView
+        final webLink = GetStorage().read('webLink');
+        if (webLink != null && webLink.toString().isNotEmpty) {
           Get.toNamed(
             AppRoutes.webview,
-            parameters: {'url': urlString, 'title': 'HR Portal'},
+            parameters: {'url': webLink.toString(), 'title': headText},
           );
-
-          // // Open in external browser instead of in-app WebView (COMMENTED)
-          // final Uri url = Uri.parse(urlString);
-          // if (await canLaunchUrl(url)) {
-          //   await launchUrl(
-          //     url,
-          //     mode: LaunchMode.externalApplication, // Force external browser
-          //   );
-          //
-          //   // Show success message
-          //   Get.snackbar(
-          //     'success'.tr,
-          //     'hr_portal_opened_browser'.tr,
-          //     backgroundColor: Colors.green,
-          //     colorText: Colors.white,
-          //     duration: const Duration(seconds: 2),
-          //   );
-          // } else {
-          //   throw Exception('Could not launch $urlString');
-          // }
-        } catch (e) {
-          print('Error opening HR Portal: $e');
+        } else {
           Get.snackbar(
-            'error'.tr,
-            '${'hr_portal_error'.tr}: ${e.toString()}',
-            backgroundColor: Colors.redAccent,
+            'Error',
+            'hr_portal_link_error'.tr,
+            backgroundColor: Colors.red,
             colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
           );
         }
       },

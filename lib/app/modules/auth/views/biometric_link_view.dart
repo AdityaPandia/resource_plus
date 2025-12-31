@@ -16,7 +16,8 @@ class _BiometricLinkViewState extends State<BiometricLinkView> {
 
   @override
   Widget build(BuildContext context) {
-    final AuthController controller = Get.find();
+    // final AuthController controller = Get.find();
+    final controller = Get.put(AuthController());
     final theme = Theme.of(context);
     const blue = Color(0xFF3B6EA5);
     const green = Color(0xFF6BC04B);
@@ -198,6 +199,10 @@ class _BiometricLinkViewState extends State<BiometricLinkView> {
                                           );
                                           await GetStorage().write(
                                             'biometricEnabled',
+                                            true,
+                                          );
+                                          await GetStorage().write(
+                                            'hasBiometric',
                                             true,
                                           );
                                           Get.offAllNamed(AppRoutes.home);

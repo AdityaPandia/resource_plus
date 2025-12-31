@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../../controllers/language_controller.dart';
+import '../../../services/api_service.dart';
 
 class AuthController extends GetxController {
   // State variables
@@ -15,7 +16,7 @@ class AuthController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
 
-  final Dio _dio = Dio();
+  final Dio _dio = ApiService().dio;
 
   // API: Validate Instance
   Future<bool> validateInstance(String instance) async {
@@ -224,12 +225,33 @@ class AuthController extends GetxController {
 
     final languageController = Get.find<LanguageController>();
 
+    // Get instance name and email from storage (more reliable than controller values)
+    final storedInstanceName =
+        GetStorage().read('instanceName') ?? instanceName.value;
+    final storedEmail = GetStorage().read('email') ?? emailOrPhone.value;
+
+    if (storedInstanceName == null || storedInstanceName.toString().isEmpty) {
+      isLoading.value = false;
+      return {
+        'success': false,
+        'message': 'Instance not found. Please login again.',
+      };
+    }
+
+    if (storedEmail == null || storedEmail.toString().isEmpty) {
+      isLoading.value = false;
+      return {
+        'success': false,
+        'message': 'Email not found. Please login again.',
+      };
+    }
+
     try {
       final response = await _dio.get(
         'https://auto.resourceplus.app/Mobile/api/Client/ChangePwd',
         queryParameters: {
-          'instanceName': instanceName.value,
-          'usrEmail': emailOrPhone.value,
+          'instanceName': storedInstanceName,
+          'usrEmail': storedEmail,
           'UsrPassword': newPassword,
           'Lang': languageController.currentLangCode,
         },
@@ -250,12 +272,12 @@ class AuthController extends GetxController {
             data = response.data[0];
             print('Using List format - First element: $data');
           } else {
-            // Empty array - likely means success (common pattern for some APIs)
-            print('Empty array response - treating as success');
+            // Empty array - treat as error unless API documentation says otherwise
+            print('Empty array response - treating as error');
             isLoading.value = false;
             return {
-              'success': true,
-              'message': 'Password changed successfully',
+              'success': false,
+              'message': 'Invalid response from server. Please try again.',
             };
           }
         } else if (response.data is Map) {
@@ -275,8 +297,14 @@ class AuthController extends GetxController {
 
         // Check if data contains the expected fields
         if (data is Map && data.containsKey('IsValid')) {
-          final isValid = data['IsValid'] == true;
-          print('IsValid: $isValid, RsltMessage: ${data['RsltMessage']}');
+          // Handle both boolean and string 'true'/'True' values
+          final isValidValue = data['IsValid'];
+          final isValid =
+              isValidValue == true ||
+              isValidValue.toString().toLowerCase() == 'true';
+          print(
+            'IsValid (raw): $isValidValue, IsValid (parsed): $isValid, RsltMessage: ${data['RsltMessage']}',
+          );
 
           if (isValid) {
             isLoading.value = false;
@@ -514,13 +542,16 @@ class AuthController extends GetxController {
   // Logout method
   Future<void> logout() async {
     // Clear all stored data except instance name
+    // Also clear biometric settings so user must setup again after logout
     await GetStorage().write('isLoggedIn', false);
     await GetStorage().write('email', '');
     await GetStorage().write('password', '');
     await GetStorage().write('username', '');
     await GetStorage().write('empDisplayName', '');
     await GetStorage().write('webLink', '');
-    await GetStorage().write('biometricEnabled', false);
+    await GetStorage().remove('hasBiometric');
+    await GetStorage().remove('biometricEnabled');
+    await GetStorage().remove('biometricSetupComplete');
 
     // Reset controller values
     emailOrPhone.value = '';

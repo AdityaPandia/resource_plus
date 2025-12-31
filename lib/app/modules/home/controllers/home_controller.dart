@@ -5,9 +5,10 @@ import 'package:get_storage/get_storage.dart';
 import '../../calendar/controllers/calendar_controller.dart';
 import '../../../controllers/language_controller.dart';
 import '../../../services/notification_service.dart';
+import '../../../services/api_service.dart';
 
 class HomeController extends GetxController {
-  final Dio _dio = Dio();
+  final Dio _dio = ApiService().dio;
   final NotificationService _notificationService = NotificationService();
 
   // Bottom navigation index
@@ -103,6 +104,7 @@ class HomeController extends GetxController {
   final RxBool isPollingEnabled = true.obs;
   final RxInt pollingIntervalMinutes = 2.obs; // Check every 2 minutes
   final RxBool isPollingActive = false.obs;
+  final RxBool pushNotificationsEnabled = true.obs;
 
   @override
   void onInit() {
@@ -657,8 +659,9 @@ class HomeController extends GetxController {
 
   Future<void> updateNotificationReadStatus(
     int notificationId,
-    int readStatus,
-  ) async {
+    int readStatus, {
+    bool refreshAfterUpdate = true,
+  }) async {
     try {
       String instanceName = await GetStorage().read('instanceName');
       String userEmail = await GetStorage().read('email');
@@ -680,13 +683,16 @@ class HomeController extends GetxController {
         final data = response.data;
         print('Update Read Status Response: $data');
 
-        // Refresh notification data after update
+        // Refresh notification data after update only if requested
+        if (refreshAfterUpdate) {
         await fetchNotificationData();
+        }
 
         return;
       }
     } catch (e) {
       print('Error updating notification read status: $e');
+      rethrow;
     }
   }
 
@@ -726,21 +732,26 @@ class HomeController extends GetxController {
   void _loadPollingSettings() {
     final storage = GetStorage();
     isPollingEnabled.value = storage.read('notificationPollingEnabled') ?? true;
-    pollingIntervalMinutes.value = storage.read('notificationPollingInterval') ?? 2;
+    pollingIntervalMinutes.value =
+        storage.read('notificationPollingInterval') ?? 2;
+    pushNotificationsEnabled.value = storage.read('pushNotificationsEnabled') ?? true;
   }
 
   void _savePollingSettings() {
     final storage = GetStorage();
     storage.write('notificationPollingEnabled', isPollingEnabled.value);
     storage.write('notificationPollingInterval', pollingIntervalMinutes.value);
+    storage.write('pushNotificationsEnabled', pushNotificationsEnabled.value);
   }
 
   void _startNotificationPolling() {
     if (!isPollingEnabled.value || isPollingActive.value) return;
-    
-    print('Starting notification polling every ${pollingIntervalMinutes.value} minutes');
+
+    print(
+      'Starting notification polling every ${pollingIntervalMinutes.value} minutes',
+    );
     isPollingActive.value = true;
-    
+
     _notificationTimer = Timer.periodic(
       Duration(minutes: pollingIntervalMinutes.value),
       (timer) => _pollForNotifications(),
@@ -756,24 +767,26 @@ class HomeController extends GetxController {
 
   Future<void> _pollForNotifications() async {
     if (!isPollingEnabled.value) return;
-    
+
     try {
       print('Polling for new notifications...');
       final previousCount = notifications.length;
-      
+
       // Fetch notifications silently (without showing loading)
       await _fetchNotificationDataSilently();
-      
+
       final newCount = notifications.length;
-      
+
       if (newCount > previousCount) {
         print('New notifications detected! Count: $previousCount -> $newCount');
-        // Show local notification for new notifications
-        await _notificationService.showCustomNotification(
-          title: 'New Notifications',
-          body: 'You have ${newCount - previousCount} new notification(s)',
-          payload: 'new_notifications',
-        );
+        // Show local notification for new notifications only if push notifications are enabled
+        if (pushNotificationsEnabled.value) {
+          await _notificationService.showCustomNotification(
+            title: 'New Notifications',
+            body: 'You have ${newCount - previousCount} new notification(s)',
+            payload: 'new_notifications',
+          );
+        }
       }
     } catch (e) {
       print('Error during notification polling: $e');
@@ -879,10 +892,20 @@ class HomeController extends GetxController {
     _stopNotificationPolling();
   }
 
+  void enablePushNotifications() {
+    pushNotificationsEnabled.value = true;
+    _savePollingSettings();
+  }
+
+  void disablePushNotifications() {
+    pushNotificationsEnabled.value = false;
+    _savePollingSettings();
+  }
+
   void updatePollingInterval(int minutes) {
     pollingIntervalMinutes.value = minutes;
     _savePollingSettings();
-    
+
     // Restart polling with new interval
     if (isPollingEnabled.value) {
       _stopNotificationPolling();

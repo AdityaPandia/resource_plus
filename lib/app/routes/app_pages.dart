@@ -12,7 +12,9 @@ import '../modules/auth/views/forgot_password_view.dart';
 import '../modules/auth/views/dynamic_url_view.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/home/views/webview_page.dart';
+import '../modules/home/views/hr_portal_view.dart';
 import '../modules/home/bindings/home_binding.dart';
+import '../modules/home/controllers/hr_portal_controller.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -21,7 +23,7 @@ class AppPages {
   static const initialLogin = AppRoutes.instanceScan;
   static const initialHome = AppRoutes.home;
   static const emailPassLogin = AppRoutes.login;
-
+  
   static final routes = [
     GetPage(name: AppRoutes.instanceScan, page: () => const InstanceScanView()),
     GetPage(
@@ -60,9 +62,14 @@ class AppPages {
       ),
     ),
     GetPage(
-      name: AppRoutes.home,
+      name: AppRoutes.home, 
       page: () => const HomeView(),
       binding: HomeBinding(),
     ),
+    GetPage(
+      name: AppRoutes.hrPortal,
+      page: () => const HrPortalView(),
+      binding: BindingsBuilder(() => Get.lazyPut(() => HrPortalController())),
+    ),
   ];
-}
+} 

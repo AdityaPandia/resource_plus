@@ -4,6 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import '../controllers/calendar_controller.dart';
+import '../../../controllers/language_controller.dart';
 
 class CalendarView extends GetView<CalendarController> {
   const CalendarView({Key? key}) : super(key: key);
@@ -36,7 +37,7 @@ class CalendarView extends GetView<CalendarController> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Error',
+                    'error'.tr,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: Theme.of(context).colorScheme.error,
                     ),
@@ -50,7 +51,7 @@ class CalendarView extends GetView<CalendarController> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: controller.initializeCalendar,
-                    child: const Text('Retry'),
+                    child: Text('retry'.tr),
                   ),
                 ],
               ),
@@ -96,15 +97,15 @@ class CalendarView extends GetView<CalendarController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Calendar',
+                  'calendar'.tr,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   controller.isAuthenticated.value
-                      ? 'Connected to Google Calendar'
-                      : 'Not connected to Google Calendar',
+                      ? 'connected_to_google_calendar'.tr
+                      : 'not_connected_to_google_calendar'.tr,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: controller.isAuthenticated.value
                         ? Colors.green
@@ -132,14 +133,14 @@ class CalendarView extends GetView<CalendarController> {
                     )
                   : const Icon(Icons.link),
               label: Text(
-                controller.isConnecting.value ? 'Connecting...' : 'Connect',
+                controller.isConnecting.value ? 'connecting'.tr : 'connect'.tr,
               ),
             ),
           if (controller.isAuthenticated.value)
             IconButton(
               onPressed: controller.disconnect,
               icon: const Icon(Icons.link_off),
-              tooltip: 'Disconnect',
+              tooltip: 'disconnect'.tr,
             ),
         ],
       ),
@@ -147,10 +148,17 @@ class CalendarView extends GetView<CalendarController> {
   }
 
   Widget _buildCalendar(BuildContext context) {
+    final languageController = Get.find<LanguageController>();
+    final currentLocale =
+        languageController.currentLanguage.value == LanguageController.english
+        ? 'en_US'
+        : 'ar_SA';
+
     return Column(
       children: [
         // Calendar widget
         TableCalendar<calendar.Event>(
+          locale: currentLocale,
           firstDay: controller.firstDate.value,
           lastDay: controller.lastDate.value,
           focusedDay: controller.focusedDate.value,
@@ -191,11 +199,17 @@ class CalendarView extends GetView<CalendarController> {
   }
 
   Widget _buildEventsList(BuildContext context) {
+    final languageController = Get.find<LanguageController>();
+    final currentLocaleString =
+        languageController.currentLanguage.value == LanguageController.english
+        ? 'en_US'
+        : 'ar_SA';
+
     final selectedDate = controller.selectedDate.value;
     if (selectedDate == null) {
       return Center(
         child: Text(
-          'Select a date to view events',
+          'select_date_to_view_events'.tr,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           ),
@@ -217,7 +231,7 @@ class CalendarView extends GetView<CalendarController> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No events for ${DateFormat('MMM dd, yyyy').format(selectedDate)}',
+              '${'no_events_for'.tr} ${DateFormat.yMMMd(currentLocaleString).format(selectedDate)}',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
@@ -227,7 +241,7 @@ class CalendarView extends GetView<CalendarController> {
               ElevatedButton.icon(
                 onPressed: () => _showAddEventDialog(context, selectedDate),
                 icon: const Icon(Icons.add),
-                label: const Text('Add Event'),
+                label: Text('add_event'.tr),
               ),
             ],
           ],
@@ -262,7 +276,7 @@ class CalendarView extends GetView<CalendarController> {
           ),
         ),
         title: Text(
-          event.summary ?? 'Untitled Event',
+          event.summary ?? 'untitled_event'.tr,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
@@ -323,23 +337,23 @@ class CalendarView extends GetView<CalendarController> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit),
-                        SizedBox(width: 8),
-                        Text('Edit'),
+                        const Icon(Icons.edit),
+                        const SizedBox(width: 8),
+                        Text('edit'.tr),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete),
-                        SizedBox(width: 8),
-                        Text('Delete'),
+                        const Icon(Icons.delete),
+                        const SizedBox(width: 8),
+                        Text('delete'.tr),
                       ],
                     ),
                   ),
@@ -351,6 +365,12 @@ class CalendarView extends GetView<CalendarController> {
   }
 
   void _showAddEventDialog(BuildContext context, DateTime selectedDate) {
+    final languageController = Get.find<LanguageController>();
+    final currentLocaleString =
+        languageController.currentLanguage.value == LanguageController.english
+        ? 'en_US'
+        : 'ar_SA';
+
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     final locationController = TextEditingController();
@@ -372,33 +392,33 @@ class CalendarView extends GetView<CalendarController> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Event'),
+        title: Text('add_event'.tr),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Event Title',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'event_title'.tr,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'description_optional'.tr,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location (optional)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'location_optional'.tr,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -406,11 +426,13 @@ class CalendarView extends GetView<CalendarController> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Start: ${DateFormat('HH:mm').format(startTime)}',
+                      '${'start'.tr}: ${DateFormat('HH:mm', currentLocaleString).format(startTime)}',
                     ),
                   ),
                   Expanded(
-                    child: Text('End: ${DateFormat('HH:mm').format(endTime)}'),
+                    child: Text(
+                      '${'end'.tr}: ${DateFormat('HH:mm', currentLocaleString).format(endTime)}',
+                    ),
                   ),
                 ],
               ),
@@ -420,7 +442,7 @@ class CalendarView extends GetView<CalendarController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -441,7 +463,7 @@ class CalendarView extends GetView<CalendarController> {
                 }
               }
             },
-            child: const Text('Add'),
+            child: Text('add'.tr),
           ),
         ],
       ),
@@ -457,12 +479,12 @@ class CalendarView extends GetView<CalendarController> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Event'),
-        content: Text('Are you sure you want to delete "${event.summary}"?'),
+        title: Text('delete_event'.tr),
+        content: Text('${'are_you_sure_delete'.tr} "${event.summary}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('cancel'.tr),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -477,7 +499,7 @@ class CalendarView extends GetView<CalendarController> {
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
-            child: const Text('Delete'),
+            child: Text('delete'.tr),
           ),
         ],
       ),
