@@ -214,9 +214,8 @@ class MyApp extends StatelessWidget {
           iconColor: Colors.white70,
         ),
       ),
-      themeMode: themeController.isDarkMode.value
-          ? ThemeMode.dark
-          : ThemeMode.light,
+      themeMode:
+          themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
       initialRoute: _getInitialRoute(),
       // : GetStorage().read('instanceName') == null ||
       //       GetStorage().read('instanceName').toString().isEmpty

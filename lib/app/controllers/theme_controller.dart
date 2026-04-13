@@ -5,20 +5,20 @@ import 'package:get_storage/get_storage.dart';
 class ThemeController extends GetxController {
   final RxBool isDarkMode = false.obs;
   final _storage = GetStorage();
-  
+
   @override
   void onInit() {
     super.onInit();
     // Load saved theme preference
     isDarkMode.value = _storage.read('isDarkMode') ?? false;
   }
-  
+
   void toggleTheme() {
     isDarkMode.value = !isDarkMode.value;
     _storage.write('isDarkMode', isDarkMode.value);
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
-  
+
   // Light Theme
   static ThemeData get lightTheme {
     return ThemeData(
@@ -50,7 +50,7 @@ class ThemeController extends GetxController {
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Color(0x1A000000), // 0.1 opacity black
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -83,7 +83,7 @@ class ThemeController extends GetxController {
             return const Color(0xFF2196F3);
           }
           return Colors.grey.withOpacity(0.3);
-        }),
+        }),  
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
@@ -101,7 +101,7 @@ class ThemeController extends GetxController {
       ),
     );
   }
-  
+
   // Dark Theme
   static ThemeData get darkTheme {
     return ThemeData(
@@ -184,4 +184,4 @@ class ThemeController extends GetxController {
       ),
     );
   }
-} 
+}

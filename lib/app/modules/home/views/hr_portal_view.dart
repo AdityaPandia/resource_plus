@@ -68,12 +68,12 @@ class HrPortalView extends GetView<HrPortalController> {
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: colorScheme.outline.withValues(alpha: 0.2),
+            color: colorScheme.outline.withOpacity(0.2),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -90,13 +90,13 @@ class HrPortalView extends GetView<HrPortalController> {
                     Icon(
                       Icons.camera_alt_outlined,
                       size: 48,
-                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: colorScheme.onSurface.withOpacity(0.5),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Camera permission required',
                       style: TextStyle(
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: colorScheme.onSurface.withOpacity(0.7),
                         fontSize: 14,
                       ),
                     ),
@@ -119,7 +119,7 @@ class HrPortalView extends GetView<HrPortalController> {
                     Text(
                       'Initializing camera...',
                       style: TextStyle(
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: colorScheme.onSurface.withOpacity(0.7),
                         fontSize: 14,
                       ),
                     ),
@@ -144,7 +144,7 @@ class HrPortalView extends GetView<HrPortalController> {
                           Icon(
                             Icons.error_outline,
                             size: 48,
-                            color: colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: colorScheme.onSurface.withOpacity(0.5),
                           )
                         else
                           CircularProgressIndicator(
@@ -158,7 +158,7 @@ class HrPortalView extends GetView<HrPortalController> {
                               ? 'Camera error occurred'
                               : 'Initializing camera...',
                           style: TextStyle(
-                            color: colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: colorScheme.onSurface.withOpacity(0.7),
                             fontSize: 14,
                           ),
                         ),
@@ -200,13 +200,13 @@ class HrPortalView extends GetView<HrPortalController> {
                       Icon(
                         Icons.error_outline,
                         size: 48,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: colorScheme.onSurface.withOpacity(0.5),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Camera preview error',
                         style: TextStyle(
-                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: colorScheme.onSurface.withOpacity(0.7),
                           fontSize: 14,
                         ),
                       ),
@@ -220,7 +220,7 @@ class HrPortalView extends GetView<HrPortalController> {
               child: Text(
                 'Camera not available',
                 style: TextStyle(
-                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: colorScheme.onSurface.withOpacity(0.7),
                   fontSize: 14,
                 ),
               ),
@@ -238,12 +238,12 @@ class HrPortalView extends GetView<HrPortalController> {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.2),
+          color: colorScheme.outline.withOpacity(0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -280,8 +280,7 @@ class HrPortalView extends GetView<HrPortalController> {
         Expanded(
           child: Obx(
             () => ElevatedButton(
-              onPressed:
-                  controller.isProcessingIn.value ||
+              onPressed: controller.isProcessingIn.value ||
                       controller.isProcessingAttendance.value
                   ? null
                   : controller.markAttendanceIn,
@@ -324,8 +323,7 @@ class HrPortalView extends GetView<HrPortalController> {
         Expanded(
           child: Obx(
             () => ElevatedButton(
-              onPressed:
-                  controller.isProcessingOut.value ||
+              onPressed: controller.isProcessingOut.value ||
                       controller.isProcessingAttendance.value
                   ? null
                   : controller.markAttendanceOut,
@@ -389,12 +387,12 @@ class HrPortalView extends GetView<HrPortalController> {
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.2),
+              color: colorScheme.outline.withOpacity(0.2),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -417,7 +415,7 @@ class HrPortalView extends GetView<HrPortalController> {
                       Text(
                         'Loading punches...',
                         style: TextStyle(
-                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: colorScheme.onSurface.withOpacity(0.7),
                           fontSize: 14,
                         ),
                       ),
@@ -437,13 +435,13 @@ class HrPortalView extends GetView<HrPortalController> {
                       Icon(
                         Icons.error_outline,
                         size: 48,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: colorScheme.onSurface.withOpacity(0.5),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         'Failed to load punches',
                         style: TextStyle(
-                          color: colorScheme.onSurface.withValues(alpha: 0.7),
+                          color: colorScheme.onSurface.withOpacity(0.7),
                           fontSize: 14,
                         ),
                       ),
@@ -460,7 +458,7 @@ class HrPortalView extends GetView<HrPortalController> {
                   child: Text(
                     'No punches found',
                     style: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: colorScheme.onSurface.withOpacity(0.5),
                       fontSize: 14,
                     ),
                   ),
@@ -475,7 +473,7 @@ class HrPortalView extends GetView<HrPortalController> {
               itemCount: controller.lastPunches.length,
               separatorBuilder: (context, index) => Divider(
                 height: 1,
-                color: colorScheme.outline.withValues(alpha: 0.2),
+                color: colorScheme.outline.withOpacity(0.2),
               ),
               itemBuilder: (context, index) {
                 final punch = controller.lastPunches[index];
@@ -499,8 +497,8 @@ class HrPortalView extends GetView<HrPortalController> {
             height: 40,
             decoration: BoxDecoration(
               color: isIn
-                  ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
-                  : Colors.red.withValues(alpha: 0.1),
+                  ? const Color(0xFF4CAF50).withOpacity(0.1)
+                  : Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -527,7 +525,7 @@ class HrPortalView extends GetView<HrPortalController> {
                   '${punch.date} • ${punch.time}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    color: colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -537,8 +535,8 @@ class HrPortalView extends GetView<HrPortalController> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: punch.status == 'Success'
-                  ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
-                  : Colors.red.withValues(alpha: 0.1),
+                  ? const Color(0xFF4CAF50).withOpacity(0.1)
+                  : Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -567,12 +565,12 @@ class HrPortalView extends GetView<HrPortalController> {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.2),
+          color: colorScheme.outline.withOpacity(0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -590,7 +588,7 @@ class HrPortalView extends GetView<HrPortalController> {
                 'Current Shift:',
                 style: TextStyle(
                   fontSize: 14,
-                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: colorScheme.onSurface.withOpacity(0.7),
                 ),
               ),
               const SizedBox(width: 8),
@@ -607,7 +605,7 @@ class HrPortalView extends GetView<HrPortalController> {
             ],
           ),
           const SizedBox(height: 16),
-          Divider(height: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
+          Divider(height: 1, color: colorScheme.outline.withOpacity(0.2)),
           const SizedBox(height: 16),
           // Current Coordinates
           Row(
@@ -623,7 +621,7 @@ class HrPortalView extends GetView<HrPortalController> {
                       'Current Coordinates:',
                       style: TextStyle(
                         fontSize: 14,
-                        color: colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: colorScheme.onSurface.withOpacity(0.7),
                       ),
                     ),
                     const SizedBox(height: 4),
